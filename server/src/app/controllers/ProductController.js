@@ -156,3 +156,5 @@ class ProductController {
         .catch(err => { res.status(500).json({msg: err.message}); return;});
     }
 }
+
+module.exports = new ProductController();
