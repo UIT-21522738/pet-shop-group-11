@@ -1,7 +1,7 @@
 const User = require('../models/Users');
 const jwt = require('jsonwebtoken');
 
-class SignInController {
+class UserController {
     //[POST] /signin
     // kiểm tra tài khoản mật khẩu đăng nhập
     pSignIn(req, res, next) 
@@ -118,4 +118,4 @@ class SignInController {
     }
 }
 
-module.exports = new SignInController();
+module.exports = new UserController();
