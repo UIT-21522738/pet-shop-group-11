@@ -46,7 +46,7 @@ class UserController {
         })
     }
 
-    //[GET] // /verify/:token
+    //[GET] // /signin/verify/:token
     // kiểm tra có phải đang đăng nhập hay không bằng cookie
     gVerify(req, res, next) {
         if (typeof req.params.token === 'undefined')  

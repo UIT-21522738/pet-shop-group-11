@@ -2,7 +2,7 @@ const Product = require('../models/Products');
 const Category = require('../models/Category');
 
 class ProductController {
-    // [POST] /product/create
+    // [POST] /products/create
     // thêm sản phẩm
     pAddProduct(req, res, next) {
         if (
@@ -49,7 +49,7 @@ class ProductController {
         .catch(err => {res.status(500).json({msg: err.message});});
     }
 
-    //[GET] /product/totalpage
+    //[GET] /products/totalpage
     // lấy tổng số page
     getTotalPage(req, res, next) {
         Product.find({})

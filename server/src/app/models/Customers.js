@@ -7,8 +7,9 @@ const Schema = mongoose.Schema;
 const customer = new Schema({
     lastName: String,
     firstName: String,
-    phone: String,
+    phoneNumber: {type: String, unique: true},
     vip: Boolean,
+    scrore: {type: Number, default: 0},
     createdAt: { type: Date, default: Date.now },
 });
 
