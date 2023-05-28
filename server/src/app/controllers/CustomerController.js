@@ -10,14 +10,14 @@ class CustomerController {
             typeof req.body.phone     === 'undefined' ||
             typeof req.body.vip       === 'undefined'
         ) {
-            res.status(404).json({msg: "invalid data"});
+            res.statusCode =404; res.json({msg: "invalid data"});
             return;
         }
 
         Customer.findOne({phoneNumber: req.body.phone})
         .then(data => {
             if (data) {
-                res.status(402).json({msg: "customer is existing"});
+                res.statusCode =402; res.json({msg: "customer is existing"});
                 return;
             }
         })
@@ -26,27 +26,27 @@ class CustomerController {
 
         newCustomer.save()
         .then(() => {
-            res.status(200).json({msg: "success"});
+            res.statusCode =200; res.json({msg: "success"});
             return;
         })
-        .catch(err => { res.status(500).json({msg: err.message}); });
+        .catch(err => { res.statusCode =500; res.json({msg: err.message}); });
     }
 
     //[DELETE] /customer/delete
     // xóa một khách hàng
     deleteCustomer(req, res, next) {
         if (typeof req.body.phoneNumber === 'undefined') {
-            res.status(404).json({msg: "invalid phone number"});
+            res.statusCode =404; res.json({msg: "invalid phone number"});
             return;
         }
 
         Customer.deleteOne({phoneNumber: req.body.phoneNumber})
         .then(() => {
-            res.status(200).json({msg: "success"});
+            res.statusCode =200; res.json({msg: "success"});
             return;
         })
         .catch(err => {
-            res.status(500).json({msg: err.message});
+            res.statusCode =500; res.json({msg: err.message});
             return;
         })
     }
@@ -54,17 +54,17 @@ class CustomerController {
     // [POST] /customer/search
     searchCustomer(req, res, next) {
         if (typeof req.body.phoneNumber === 'undefined') {
-            res.status(404).json({msg: 'invalid phone number'});
+            res.statusCode =404; res.json({msg: 'invalid phone number'});
             return;
         }
 
         Customer.findOne({phoneNumber: req.body.phoneNumber})
         .then(data => {
-            res.status(200).json({msg: 'success', data: data});
+            res.statusCode =200; res.json({msg: 'success', data: data});
             return;
         })
         .catch(err => {
-            res.status(500).json({msg: err.message});
+            res.statusCode =500; res.json({msg: err.message});
             return;
         })
     }
@@ -77,25 +77,25 @@ class CustomerController {
             typeof req.body.phone     === 'undefined' ||
             typeof req.body.vip       === 'undefined'
         ) {
-            res.status(404).json({msg: "invalid data"});
+            res.statusCode =404; res.json({msg: "invalid data"});
             return;
         }
 
         Customer.findOne({phoneNumber: req.body.phone})
         .then(data => {
             if (data) {
-                res.status(402).json({msg: "customer's phone number is existing"});
+                res.statusCode =402; res.json({msg: "customer's phone number is existing"});
                 return;
             }
         })
 
         Customer.updateOne({phoneNumber: req.params.id}, req.body)
         .then(data => {
-            res.status(200).json({msg: 'success'});
+            res.statusCode =200; res.json({msg: 'success'});
             return;
         })
         .catch(err => {
-            res.status(500).json({msg: err.message});
+            res.statusCode =500; res.json({msg: err.message});
             return;
         })
         

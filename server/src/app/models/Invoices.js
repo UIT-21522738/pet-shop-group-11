@@ -5,7 +5,7 @@ const Schema = mongoose.Schema;
 
 // định nghĩa 1 invoice
 const invoice = new Schema({
-    CustomerId: String,
+    customerId: String,
     staffId: String,
     totalPrice: Number,
     discount: Number,

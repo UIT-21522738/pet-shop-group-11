@@ -10,7 +10,7 @@ class UserController {
             typeof req.body.username === "undefined" ||
             typeof req.body.password === "undefined"
         ) {
-            res.status(402).json({ msg: "Invalid data"});
+            res.statusCode =402; res.json({ msg: "Invalid data"});
             return ;
         }
 
@@ -22,7 +22,7 @@ class UserController {
             if (data) 
             {
                 const token = jwt.sign({ _id: data._id }, 'petshop');
-                res.status(200).json({
+                res.statusCode =200; res.json({
                     msg: "success",
                     token: token,
                     user: {
@@ -36,12 +36,12 @@ class UserController {
                 return;
             }
             else {
-                res.status(402).json({msg: "Invalid username or password"})
+                res.statusCode =402; res.json({msg: "Invalid username or password"})
                 return;
             }
         })
         .catch(err => {
-            res.status(500).json({msg: err.message});
+            res.statusCode =500; res.json({msg: err.message});
             return;
         })
     }
@@ -51,7 +51,7 @@ class UserController {
     gVerify(req, res, next) {
         if (typeof req.params.token === 'undefined')  
         {
-            req.status(402).json({msg: "invalid"});
+            res.statusCode = 402; res.json({msg: "invalid"});
             return;
         }
         const token = req.params.token;
@@ -60,21 +60,21 @@ class UserController {
         // lấy id từ token
         try {id = jwt.verify(token, 'petshop')}
         catch (e) {
-            res.status(500).json({msg: e.message});
+            res.statusCode =500; res.json({msg: e.message});
         }
         
         User.findById(id)
         .then(data => {
             if (typeof data === 'undefined') {
-                res.status(402).json({msg: "Invalid"});
+                res.statusCode =402; res.json({msg: "Invalid"});
                 return ;
             }
 
-            res.status(200).json({msg: "success"});
+            res.statusCode =200; res.json({msg: "success", data: data._id});
             return;
         })
         .catch(err => {
-            res.status(500).json({msg: err.message});
+            res.statusCode =500; res.json({msg: err.message});
         })
     }
 
@@ -90,30 +90,34 @@ class UserController {
             typeof req.body.lastName    === 'undefined' ||
             typeof req.body.shift       === 'undefined' 
         ) {
-            res.status(402).json({msg: 'Invalid data'});
+            res.statusCode =402; res.json({msg: 'Invalid data'});
             return;
         }
 
         // kiểm tra username đã tồn tại hay chưa
         User.findOne({username: req.body.username})
         .then(data => {
-            if (typeof data !== 'undefined') {
-                res.status(402).json({msg: "username exist"})
+            if (data) {
+                res.statusCode = 404;
+                res.json({msg: "username exist" })
                 return ;
             }
         })
         .catch(err => {
-            res.status(500).json({msg: err.message})
+            res.statusCode = 500;
+            res.json({msg: err.message})
         })
 
         //tạo user mới
         const newUser = new User(req.body)
         newUser.save()
         .then(() => {
-            res.status(200).json({msg:"success"});
+            res.statusCode = 200;
+            res.json({msg:"success"});
         })
         .catch(err => {
-            res.status(500).json({msg: err.message});
+            res.statusCode = 500;
+            res.json({msg: err.message});
         });
     }
 }
