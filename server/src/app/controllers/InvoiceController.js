@@ -47,7 +47,7 @@ class SellController {
             customerId: req.body.customerId,
             staffId: req.body.staffId,
             discount: parseFloat(req.body.discount),
-            totalPrice: sum6
+            totalPrice: sum
         });
         invoice.save()
         .then(async (data) => {
