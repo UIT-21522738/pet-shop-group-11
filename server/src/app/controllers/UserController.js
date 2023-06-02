@@ -1,5 +1,6 @@
 const User = require('../models/Users');
 const jwt = require('jsonwebtoken');
+const WorkSchedule = require('../models/Work_schedule');
 
 class UserController {
     //[POST] /signin
@@ -21,6 +22,9 @@ class UserController {
         .then(data => {
             if (data) 
             {
+                const date = new Date(Date.now());
+                const WS = new WorkSchedule({staffId: data._id, work_date: date.getDate(), work_month: date.getMonth()});
+                WS.save();
                 const token = jwt.sign({ _id: data._id }, 'petshop');
                 res.statusCode =200; res.json({
                     msg: "success",
