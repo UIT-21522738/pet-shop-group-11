@@ -1,4 +1,5 @@
 const Staff = require('../models/Users');
+const WS = require('../models/Work_schedule');
 
 class StaffController {
     // [POST] /staff/create
@@ -186,6 +187,58 @@ class StaffController {
             res.statusCode = 500;
             res.json({msg: err.message});
         });
+    }
+
+    // [POST] /staff/ws/:id
+    pGetWorkSchedule(req, res, next) {
+        if (typeof req.body.month === 'undefined' ||
+            typeof req.body.year === 'undefined') {
+            res.statusCode = 404;
+            res.json({msg: "invalid date"});
+            return;
+        }
+
+        WS.find({staffId: req.params.id, date_month: req.params.month, date_year: req.params.year})
+        .then((data) => {
+            if (data) {
+                res.statusCode = 200;
+                res.json({msg: 'success', data});
+                return;
+            } 
+            res.statusCode = 402; 
+            res.json({msg: 'not found'});
+        })
+        .catch((err) => {
+            res.statusCode = 500;
+            res.json({msg: err.message});
+        })
+        
+    }
+
+    // [POST] /staff/salary/get/:id
+    pGetSalary(req, res, next) {
+        if (typeof req.body.month === 'undefined' ||
+            typeof req.body.year === 'undefined') {
+            res.statusCode = 404;
+            res.json({msg: "invalid date"});
+        }
+
+        Staff.findById(req.params.id)
+        .then(async (data) => {
+            if (data) 
+            {
+                const ws = await WS.find({staffId: req.params.id, date_month: data.body.month, date_year: data.body.year})
+                ws.then(async (workSchedules) => {
+                    let salary = (workSchedules.length + 1) * data.salary;
+
+                    res.statusCode = 200;
+                    res.json({msg: "success", ws: (workSchedules.length + 1), salary: salary})
+                })
+            }
+            res.statusCode = 402;
+            res.json({msg: "not found"});
+            return;
+        })
     }
 }
 
