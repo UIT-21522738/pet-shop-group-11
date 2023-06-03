@@ -1,0 +1,3 @@
+[submodule "GAUGAU-FE"]
+	path = GAUGAU-FE
+	url = https://github.com/UIT-21522825/GAUGAU-FE.git
