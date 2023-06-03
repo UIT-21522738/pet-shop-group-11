@@ -46,6 +46,7 @@ class UserController {
                         firstName: data.firstName,
                         lastName: data.lastName,
                         phoneNumber: data.phoneNumber,
+                        role: data.role
                     }
                 })
                 return;
@@ -121,6 +122,7 @@ class UserController {
         .catch(err => {
             res.statusCode = 500;
             res.json({msg: err.message})
+            return ;
         })
 
         //tạo user mới
