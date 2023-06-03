@@ -174,6 +174,8 @@ class SellController {
             res.json({msg: 'success', data: data});
         })
         .catch(err => { res.statusCode = 500; res.json({msg: err.message}); });
+
+        
     }
 }
 
