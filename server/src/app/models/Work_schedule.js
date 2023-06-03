@@ -8,7 +8,7 @@ const Schedule = new Schema({
     staffId: String,
     work_date: Number,
     work_month: Number,
-    createdAt: { type: Date, default: Date.now },
+    work_year: Number,
 });
 
 module.exports = mongoose.model('Work Schedule', Schedule);

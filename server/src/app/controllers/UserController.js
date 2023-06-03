@@ -23,8 +23,19 @@ class UserController {
             if (data) 
             {
                 const date = new Date(Date.now());
-                const WS = new WorkSchedule({staffId: data._id, work_date: date.getDate(), work_month: date.getMonth()});
-                WS.save();
+                const month = date.getMonth() + 1;
+                const day = date.getDate();
+                const year = date.getFullYear();
+
+                WorkSchedule.findOne({staffId: data._id, work_date: day, work_month: month, work_year: year})
+                .then(async (ws) => {
+                    if (ws) {
+                        
+                    } else {
+                        const WS = new WorkSchedule({staffId: data._id, work_date: day, work_month: month, work_year: year});
+                        await WS.save();
+                    }
+                })
                 const token = jwt.sign({ _id: data._id }, 'petshop');
                 res.statusCode =200; res.json({
                     msg: "success",
