@@ -202,7 +202,7 @@ class StaffController {
         .then((data) => {
             if (data) {
                 res.statusCode = 200;
-                res.json({msg: 'success', data});
+                res.json({msg: 'success', data, count: data.length()    });
                 return;
             } 
             res.statusCode = 402; 

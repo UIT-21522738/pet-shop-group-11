@@ -54,10 +54,10 @@ class ProductController {
     getTotalPage(req, res, next) {
         Product.find({})
         .then(data => {
-            res.statusCode =200; res.json({data: parseInt((data.length - 1) / 12) + 1});
+            res.statusCode =200; res.json({msg: 'success',data: parseInt((data.length - 1) / 12) + 1});
             return;
         })
-        .catch(err => { res.statusCode =500; res.json({err: err.message}); return;});
+        .catch(err => { res.statusCode =500; res.json({msg: err.message}); return;});
     }
 
     // [GET] /products/get?p=...
@@ -158,12 +158,21 @@ class ProductController {
 
     //[POST] /products/checkStock
     pCheckStock(req, res, next) {
-        if (typeof req.body.name === 'undefined') {
+        if (typeof req.body.id === 'undefined' && typeof req.body.code === 'undefined') {
             res.statusCode =404; res.json({msg: 'invalid name'});
             return;
         }
 
-        Product.findOne({name: req.body.name})
+        Product.findOne({code: req.body.code})
+        .then(data => {
+            if (data) {
+                res.statusCode =200; res.json({msg: 'success', data: data.storage});
+                return;
+            }
+        })
+        .catch(err => { res.statusCode =500; res.json({msg: err.message}); return;});
+
+        Product.findById(req.body.id)
         .then(data => {
             if (data) {
                 res.statusCode =200; res.json({msg: 'success', data: data.storage});

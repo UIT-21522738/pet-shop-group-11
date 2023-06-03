@@ -102,32 +102,31 @@ class SellController {
         Invoice_details.find({invoiceId: req.body.invoiceId})
         .then(async (data) => {
             // gán dữ liệu về các invoice details vào biến products
-            await new Promise((resolve, reject) =>{
-                setTimeout(() => {
-                    products = data;
-                },1000)
-            })
+            // await new Promise((resolve, reject) =>{
+            //     setTimeout(() => {
+            //         products = data;
+            //     },1000)
+            // })
 
             // gán dữ liệu về sản phẩm vào invoice details tương ứng
-            for (let i = 0; i < products.length; i++) 
+            for (let i = 0; i < data.length; i++) 
             {
-                await Product.findById(products[i].productId)
+                await Product.findById(data[i].productId)
                 .then(async (product) => {
                     await new Promise((resolve, reject) =>{
                         setTimeout(() => {
-                            products[i].product = product;
-                        },300)
+                            product['quantity'] = data[i].quantity;
+                            products.push(product);
+                        },700)
                     })
                 });
             }
         })
+        .catch((err) => { res.statusCode = 500; res.json({msg: err.message}); });
 
-        Invoice.findOne({invoiceId: req.body.invoiceId})
-        .then(data => {
-            res.status = 200;
-            res.json({msg: 'success', data: data, products: products});
-        })
-        .catch(err => {res.statusCode = 500; res.json({msg: err.message});});
+        res.statusCode = 200;
+        res.json({msg: 'success', products: products});
+        
     }
 
     //[POST] /invoice/revenue/month
