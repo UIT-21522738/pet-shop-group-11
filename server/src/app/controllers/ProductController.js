@@ -184,6 +184,33 @@ class ProductController {
         })
         .catch(err => { res.statusCode =500; res.json({msg: err.message}); return;});
     }
+
+    //[POST] /products/adjustments/:id
+    pAdjustments(req, res, next) {
+        if (typeof req.body.quantity === 'undefined') {
+            res.statusCode = 404;
+            res.json({msg: "invalid data"});
+            return;
+        }
+
+        const product = Product.findById(req.params.id);
+        if (typeof product.name === "string") {
+            product.quantity = req.body.quantity;
+            product.save()
+            .then(() => {
+                res.statusCode = 200;
+                res.json({msg: "Success"});
+            })
+            .catch(err => {
+                res.statusCode = 500;
+                res.json({msg: err.message});
+            })
+        }
+        else {
+            res.statusCode = 402;
+            res.json({msg: "Not found"});
+        }
+    }
 }
 
 module.exports = new ProductController();

@@ -9,8 +9,8 @@ const Schema = mongoose.Schema;
 // định nghĩa 1 product
 const product = new Schema({
     name: String,
-    price: Number,
-    storage: Number,
+    price: {type: Number, set: function (value) { return parseInt(value, 10);}},
+    storage: {type: Number, set: function (value) { return parseInt(value, 10);}},
     type_id: String,
     description: String,
     img: String,

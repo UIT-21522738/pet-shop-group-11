@@ -10,7 +10,7 @@ const user = new Schema({
     lastName: String,
     address: String,
     salary: String,
-    shift: Number,
+    shift: {type: Number, set: function (value) { return parseInt(value, 10);}},
 })
 
 module.exports = moongoose.model('User', user);

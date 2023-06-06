@@ -9,7 +9,7 @@ const Schedule = new Schema({
     description: String,
     startDate: Date,
     endDate: Date,
-    discount_percentage: Number,
+    discount_percentage: {type: Number, set: function(v) {return parseFloat(v);}}
 });
 
 module.exports = mongoose.model('Work Schedule', Schedule);
