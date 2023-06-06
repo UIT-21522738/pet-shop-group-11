@@ -3,9 +3,9 @@ const Schema = mongoose.Schema;
 
 // định nghĩa 
 const facilities = new Schema({
-    name: String,
+    name: { type: String, unique: true },
     description: String,
-    quantity: Number,
+    quantity: {type: Number, set: function (value) { return parseInt(value, 10);}},
     location: String,
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }

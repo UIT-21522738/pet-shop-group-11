@@ -6,9 +6,9 @@ const Schema = mongoose.Schema;
 // định nghĩa 
 const Schedule = new Schema({
     staffId: String,
-    work_date: Number,
-    work_month: Number,
-    work_year: Number,
+    work_date: {type: Number, set: function (value) { return parseInt(value, 10);}},
+    work_month: {type: Number, set: function (value) { return parseInt(value, 10);}},
+    work_year: {type: Number, set: function (value) { return parseInt(value, 10);}},
 });
 
 module.exports = mongoose.model('Work Schedule', Schedule);

@@ -9,7 +9,7 @@ const customer = new Schema({
     firstName: String,
     phoneNumber: {type: String, unique: true},
     vip: Boolean,
-    scrore: {type: Number, default: 0},
+    scrore: {type: Number, default: 0, set: function(v) {return parseInt(v);}},
     createdAt: { type: Date, default: Date.now },
 });
 

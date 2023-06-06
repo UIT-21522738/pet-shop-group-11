@@ -7,8 +7,8 @@ const Schema = mongoose.Schema;
 const invoice_detail = new Schema({
     invoiceId: String,
     productId: String,
-    quantity: Number,
-    price: Number,
+    quantity: {type: Number, set: function (value) { return parseInt(value, 10);}},
+    price: {type: Number, set: function (value) { return parseInt(value, 10);}},
 });
 
 module.exports = mongoose.model('Invoice_detail', invoice_detail);
