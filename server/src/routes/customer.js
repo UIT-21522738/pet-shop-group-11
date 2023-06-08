@@ -3,6 +3,12 @@ const router = express.Router();
 
 const customer = require('../app/controllers/CustomerController');
 
+// Update chỉ số vip
+router.post('/vip/update/:id', customer.pUpdateVip)
+
+//check vip
+router.get('/vip/check/:id', customer.gCheckVip)
+
 // [POST] /customer/add
 router.post('/add', customer.addCustomer);
 

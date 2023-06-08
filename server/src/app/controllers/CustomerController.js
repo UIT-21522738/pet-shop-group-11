@@ -100,6 +100,41 @@ class CustomerController {
         })
         
     }
+
+    //[POST] /customer/vip/update/:id
+    pUpdateVip(req, res, next) {
+        Customer.findById(req.params.id)
+        .then(data => {
+            if (data) {
+                Customer.updateById(req.params.id, {vip: true})
+                .then(() => {
+                    res.statusCode =200; res.json({msg: 'success'});
+                    return;
+                })
+                .catch(err => {
+                    res.statusCode =500; res.json({msg: err.message});
+                    return;
+                })
+            }
+            res.statusCode = 402; res.json({msg: "not found"});
+        })
+        .catch(err => {
+            res.statusCode =500; res.json({msg: err.message});
+        })
+    }
+
+    //[GET] /customer/vip/check/:id
+    gCheckVip(req, res, next) {
+        Customer.findById(req.params.id)
+        .then(data => {
+            if (data) {
+                res.statusCode = 200; res.json({msg:'success', data: data.vip});
+                return;
+            }
+            res.statusCode = 402; res.json({msg:'not found'});
+        })
+        .catch(err => { res.statusCode = err.message; res.json({msg: err.message});});
+    }
 }
 
 module.exports = new CustomerController();

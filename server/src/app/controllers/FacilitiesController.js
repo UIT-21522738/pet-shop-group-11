@@ -67,7 +67,7 @@ class FacilitiesController {
         })
     }
 
-    // [PUT] /dacilites/update
+    // [PUT] /facilites/update
     pUpdateFacilities(req, res, next) {
         if (
             typeof req.body.id === 'undefined' || 
@@ -126,13 +126,10 @@ class FacilitiesController {
                 }
             }
         })
-        
-        
-
     }
 
     //[DELETE] /facilities/delete/:id
-    pDeleteFacilities(req, res, next) {
+    dDeleteFacilities(req, res, next) {
         Facilities.findByIdAndDelete(body.params.id)
         .then(() => {
             res.statusCode =200; res.json({msg: "success"});
@@ -144,3 +141,5 @@ class FacilitiesController {
         })
     }
 }
+
+module.exports = new FacilitiesController();
