@@ -3,6 +3,8 @@ const router = express.Router();
 
 const ProductController = require('../app/controllers/ProductController');
 
+//thay đổi lượng tồn kho
+router.post("/adjustments/:id", ProductController.pAdjustments)
 //[POST] /products/create
 router.post("/create",ProductController.pAddProduct);
 //[GET] /product/totalpage

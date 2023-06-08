@@ -47,7 +47,7 @@ class SellController {
             customerId: req.body.customerId,
             staffId: req.body.staffId,
             discount: parseFloat(req.body.discount),
-            totalPrice: sum
+            totalPrice: sum * (1 - parseFloat(req.body.discount))
         });
         invoice.save()
         .then(async (data) => {
@@ -57,6 +57,8 @@ class SellController {
                 let invoiceDetails = new Invoice_details({productId: products[i], invoiceId: data._id, quantity: quantities[i], price: products_price[i]});
                 await invoiceDetails.save();
             }
+            Customer.findByIdAndUpdate(req.body.customerId, {score: sum * (1 - parseFloat(req.body.discount)) / 100});
+
             res.statusCode = 200;
             res.json({msg: 'Success'});
         })
