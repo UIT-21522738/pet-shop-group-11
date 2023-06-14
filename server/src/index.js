@@ -1,6 +1,7 @@
 const path = require('path');
 const express = require('express');
 const morgan = require('morgan');
+const cors = require('cors');
 // const { engine } = require('express-handlebars');
 const app = express();
 const port = 5000;
@@ -15,6 +16,9 @@ db.connect()
 //middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+//accept cors
+app.use(cors());
 
 // HTTP logger
 app.use(morgan('combined'));
