@@ -3,6 +3,9 @@ const router = express.Router();
 
 const StaffController = require('../app/controllers/StaffController');
 
+// lấy danh sách toàn bộ khách hàng
+router.get('/getall', StaffController.gAllStaff);
+
 router.post('/ws/:id', StaffController.pGetWorkSchedule);
 router.post('/salary/get/:id', StaffController.pGetSalary);
 router.post('/create', StaffController.pCreateStaff);

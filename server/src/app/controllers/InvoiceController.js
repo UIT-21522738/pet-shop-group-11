@@ -3,6 +3,7 @@ const Product = require('../models/Products');
 const Invoice = require('../models/Invoices');
 const Staff = require('../models/Users');
 const Invoice_details = require('../models/Invoice_details');
+const Invoices = require('../models/Invoices');
 
 
 //sử dụng hàm bất đồng bộ để lấy giá của các sản phẩm.
@@ -186,6 +187,21 @@ class SellController {
         .catch(err => { res.statusCode = 500; res.json({msg: err.message}); });
 
         
+    }
+
+    //[GET] /invoice/getall
+    gAllInvoice(req, res, next) {
+        Invoices.find()
+        .then(data => {
+            res.statusCode = 200;
+            res.json({msg: "success", data: data});
+            return;
+        })
+        .catch(err => {
+            res.statusCode = 500;
+            res.json({msg: err.message});
+            return;
+        })
     }
 }
 

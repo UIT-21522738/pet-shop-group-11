@@ -149,6 +149,21 @@ class CustomerController {
         })
         .catch(err => { res.statusCode = err.message; res.json({msg: err.message});});
     }
+
+    //[GET] /customer/getall
+    gAllCustomer(req, res, next) {
+        Customer.find()
+        .then(data => {
+            res.statusCode = 200;
+            res.json({msg: "success", data: data});
+            return;
+        })
+        .catch(err => {
+            res.statusCode = 500;
+            res.json({msg: err.message});
+            return;
+        })
+    }
 }
 
 module.exports = new CustomerController();

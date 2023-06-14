@@ -3,6 +3,9 @@ const router = express.Router();
 
 const InvoiceController = require('../app/controllers/InvoiceController');
 
+// lấy danh sách toàn bộ hóa đơn
+router.get('/getall', InvoiceController.gAllInvoice);
+
 // tạo hóa đơn
 router.post('/create', InvoiceController.pCreateInvoice);
 
