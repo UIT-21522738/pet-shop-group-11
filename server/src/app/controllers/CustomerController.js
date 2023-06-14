@@ -3,33 +3,35 @@ const Customer = require('../models/Customers')
 class CustomerController {
     //[POST] /customer/add
     //thêm một khách hàng
-    addCustomer(req, res, next) {
+    async addCustomer(req, res, next) {
         if (
             typeof req.body.firstName === 'undefined' ||
-            typeof req.body.lastName  === 'undefined' ||
+            typeof req.body.lastName === 'undefined' ||
             typeof req.body.phoneNumber === 'undefined' ||
-            typeof req.body.vip       === 'undefined'
+            typeof req.body.vip === 'undefined'
         ) {
-            res.statusCode =404; res.json({msg: "invalid data"});
+            res.statusCode = 404;
+            res.json({ msg: "invalid data" });
             return;
         }
-
-        Customer.findOne({phoneNumber: req.body.phoneNumber})
-        .then(data => {
+    
+        try {
+            const data = await Customer.findOne({ phoneNumber: req.body.phoneNumber });
             if (data) {
-                res.statusCode =402; res.json({msg: "customer is existing"});
+                res.statusCode = 402;
+                res.json({ msg: "customer is existing" });
                 return;
             }
-        })
-
-        let newCustomer = new Customer(req.body);
-
-        newCustomer.save()
-        .then(() => {
-            res.statusCode =200; res.json({msg: "success"});
-            return;
-        })
-        .catch(err => { res.statusCode =500; res.json({msg: err.message}); });
+    
+            let newCustomer = new Customer(req.body);
+    
+            await newCustomer.save();
+            res.statusCode = 200;
+            res.json({ msg: "success" });
+        } catch (err) {
+            res.statusCode = 500;
+            res.json({ msg: err.message });
+        }
     }
 
     //[DELETE] /customer/delete
@@ -73,40 +75,49 @@ class CustomerController {
     updateCustomer(req, res, next) {
         if (
             typeof req.body.firstName === 'undefined' ||
-            typeof req.body.lastName  === 'undefined' ||
-            typeof req.body.phoneNumber     === 'undefined' ||
-            typeof req.body.vip       === 'undefined'
+            typeof req.body.lastName === 'undefined' ||
+            typeof req.body.phoneNumber === 'undefined' ||
+            typeof req.body.vip === 'undefined'
         ) {
-            res.statusCode =404; res.json({msg: "invalid data"});
+            res.statusCode = 404;
+            res.json({ msg: "invalid data" });
             return;
         }
-
+    
+        let sentResponse = false;
+    
         Customer.findById(req.params.id)
-        .then(data => {
-            if (data) {
-                res.statusCode =402; res.json({msg: "customer is not found"});
+        .then(customer => {
+            if (!customer) {
+                sentResponse = true;
+                res.statusCode = 402;
+                res.json({ msg: "customer is not found" });
                 return;
             }
-        })
 
-        Customer.updateOne({_id: req.params.id}, req.body)
-        .then(data => {
-            res.statusCode =200; res.json({msg: 'success'});
-            return;
+            return Customer.updateOne({ _id: req.params.id }, req.body);
+        })
+        .then(() => {
+            if (!sentResponse) {
+                res.statusCode = 200;
+                res.json({ msg: 'success' });
+            }
         })
         .catch(err => {
-            res.statusCode =500; res.json({msg: err.message});
-            return;
-        })
-        
+            if (!sentResponse) {
+                res.statusCode = 500;
+                res.json({ msg: err.message });
+            }
+        });
     }
+        
 
     //[POST] /customer/vip/update/:id
     pUpdateVip(req, res, next) {
         Customer.findById(req.params.id)
         .then(data => {
             if (data) {
-                Customer.updateById(req.params.id, {vip: true})
+                Customer.findByIdAndUpdate(req.params.id, {vip: true})
                 .then(() => {
                     res.statusCode =200; res.json({msg: 'success'});
                     return;
@@ -116,7 +127,10 @@ class CustomerController {
                     return;
                 })
             }
-            res.statusCode = 402; res.json({msg: "not found"});
+            else {
+                res.statusCode = 402; res.json({msg: "not found"});
+            }
+            
         })
         .catch(err => {
             res.statusCode =500; res.json({msg: err.message});

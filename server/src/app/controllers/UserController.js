@@ -36,8 +36,12 @@ class UserController {
                         await WS.save();
                     }
                 })
+                .catch(err => {
+                    throw err;
+                })
                 const token = jwt.sign({ _id: data._id }, 'petshop');
-                res.statusCode =200; res.json({
+                res.statusCode =200; 
+                res.json({
                     msg: "success",
                     token: token,
                     user: {
@@ -77,21 +81,30 @@ class UserController {
         try {id = jwt.verify(token, 'petshop')}
         catch (e) {
             res.statusCode =500; res.json({msg: e.message});
+            return;
         }
         
-        User.findById(id)
-        .then(data => {
-            if (typeof data === 'undefined') {
-                res.statusCode =402; res.json({msg: "Invalid"});
-                return ;
-            }
-
-            res.statusCode =200; res.json({msg: "success", data: data._id});
-            return;
-        })
-        .catch(err => {
+        try {
+            User.findById(id)
+            .then(data => {
+                if (typeof data === 'undefined') {
+                    res.statusCode =402; res.json({msg: "Invalid"});
+                    return ;
+                }
+                else {
+                    res.statusCode =200; res.json({msg: "success", data: data._id});
+                    return;
+                }
+            })
+            .catch(err => {
+                throw err;
+            })
+        }
+        catch (err) {
             res.statusCode =500; res.json({msg: err.message});
-        })
+            return;
+        }
+        
     }
 
     //[POST] /register
@@ -111,31 +124,42 @@ class UserController {
         }
 
         // kiểm tra username đã tồn tại hay chưa
-        User.findOne({username: req.body.username})
-        .then(data => {
-            if (data) {
-                res.statusCode = 404;
-                res.json({msg: "username exist" })
-                return ;
-            }
-        })
-        .catch(err => {
+        try {
+            User.findOne({username: req.body.username})
+                .then(data => {
+                    if (data) {
+                        res.statusCode = 404;
+                        res.json({msg: "username exist" });
+                        return;
+                    }
+                })
+                .catch(err => {
+                    throw err; 
+                });
+        } catch (err) {
             res.statusCode = 500;
-            res.json({msg: err.message})
-            return ;
-        })
+            res.json({msg: err.message});
+        }
 
         //tạo user mới
         const newUser = new User(req.body)
-        newUser.save()
-        .then(() => {
-            res.statusCode = 200;
-            res.json({msg:"success"});
-        })
-        .catch(err => {
+        try {
+            newUser.save()
+            .then(() => {
+                res.statusCode = 200;
+                res.json({msg:"success"});
+                return;
+            })
+            .catch(err => {
+                throw err;
+            });
+        }
+        catch (err) {
             res.statusCode = 500;
             res.json({msg: err.message});
-        });
+            return;
+        }
+        
     }
 }
 

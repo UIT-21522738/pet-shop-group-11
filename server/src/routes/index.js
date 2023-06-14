@@ -10,7 +10,7 @@ const facilities = require('./facilities');
 // chuyển hướng khi vào các đầu url dưới
 function route(app) {
     app.use('/discount', discount);
-    app.use('/facilites', facilities);
+    app.use('/facilities', facilities);
     app.use('/staff', staff);
     app.use('/invoice', invoice);
     app.use('/customer', customer)

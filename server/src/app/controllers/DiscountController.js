@@ -22,15 +22,20 @@ class DiscountController {
         const startDate = new Date();
         const endDate = new Date();
 
-        startDate.setDate(req.body.startDate);
-        startDate.setMonth(req.body.startMonth);
-        startDate.setFullYear(req.body.startYear);
-        startDate.setDateHours(0,0,0);
+        // +7 để set múi giờ Việt Nam
+        startDate.setDate(parseInt(req.body.startDate) + 7);
+        startDate.setMonth(parseInt(req.body.startMonth) - 1);
+        startDate.setFullYear(parseInt(req.body.startYear));
+        startDate.setHours(0);
+        startDate.setMinutes(0);
+        startDate.setSeconds(0);
 
-        endDate.setDate(req.body.endDate);
-        endDate.setMonth(req.body.endMonth);
-        endDate.setFullYear(req.body.endYear);
-        endDate.setDateHours(23,59,59);
+        endDate.setDate(parseInt(req.body.endDate) + 7);
+        endDate.setMonth(parseInt(req.body.endMonth) - 1);
+        endDate.setFullYear(parseInt(req.body.endYear));
+        endDate.setHours(23);
+        endDate.setMinutes(59);
+        endDate.setSeconds(59);
 
         const discount = {
             name: req.body.name,

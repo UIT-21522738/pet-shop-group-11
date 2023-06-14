@@ -9,7 +9,7 @@ const Invoice_details = require('../models/Invoice_details');
 async function getPrice(products)
 {
     let products_price = []
-    for (let id in products) {
+    for (let id of products) {
         await Product.findById(id)
         .then(async (data) => {
             await new Promise((resolve) => setTimeout(resolve, 300));
@@ -22,7 +22,7 @@ async function getPrice(products)
 
 class SellController {
     //[POST] /invoice/create
-    pCreateInvoice(req, res, next) {
+    async pCreateInvoice(req, res, next) {
         if (
             typeof req.body.staffId === 'undefined' ||
             typeof req.body.customerId === 'undefined' ||
@@ -36,12 +36,12 @@ class SellController {
         }
         let products = req.body.products;
         let quantities = req.body.quantity;
-        let products_price = getPrice(products);
+        let products_price = await getPrice(products);
         let sum = 0;
         for (let i = 0; i < products.length; i++) {
-            sum += quantities[i] * products_price[i];
+            sum += parseInt(quantities[i]) * products_price[i];
         }
-
+        await new Promise((resolve, reject) => setTimeout(resolve,500));
         //tạo hóa đơn
         let invoice = new Invoice({
             customerId: req.body.customerId,
@@ -62,7 +62,7 @@ class SellController {
             res.statusCode = 200;
             res.json({msg: 'Success'});
         })
-        .catch(err => {res.statusCode = 404; res.json({msg: err.message}); return;}); 
+        .catch(err => {res.statusCode = 404; res.json({msg: err.message, t: "0"}); return;}); 
     }
 
     //[POST] /invoice/get
@@ -92,7 +92,7 @@ class SellController {
     }
 
     //[POST] /invoice/search
-    pSearchInvoice(req, res, next) {
+    async pSearchInvoice(req, res, next) {
         if (typeof req.body.invoiceId === 'undefined') {
             res.statusCode = 404;
             res.json({msg: 'invoiceid invalid'})
@@ -101,7 +101,7 @@ class SellController {
         
         var products = [];
 
-        Invoice_details.find({invoiceId: req.body.invoiceId})
+        await Invoice_details.find({invoiceId: req.body.invoiceId})
         .then(async (data) => {
             // gán dữ liệu về các invoice details vào biến products
             // await new Promise((resolve, reject) =>{
@@ -119,10 +119,12 @@ class SellController {
                         setTimeout(() => {
                             product['quantity'] = data[i].quantity;
                             products.push(product);
-                        },700)
+                            resolve();
+                        },100)
                     })
                 });
             }
+            // await new Promise((resolve, reject) => setTimeout(() => {},1000));
         })
         .catch((err) => { res.statusCode = 500; res.json({msg: err.message}); });
 
@@ -139,16 +141,19 @@ class SellController {
         ){
             res.statusCode = 404;
             res.json({msg: 'invalid data'});
+            return;
         }
 
-        let month = parseInt(req.body.month);
+        let month = parseInt(req.body.month) -1;
         let year = parseInt(req.body.year);
         let startDate = new Date();
 
         startDate.setUTCFullYear(year);
         startDate.setUTCMonth(month);
         startDate.setUTCDate(1);
-        startDate.setDateHours(0,0,0);
+        startDate.setHours(0);
+        startDate.setMinutes(0);
+        startDate.setSeconds(0);
 
         let finishDate = new Date();
         
@@ -165,9 +170,12 @@ class SellController {
             if (month === 4 || month === 6 || month === 9 || month === 11) finishDate.setUTCDate(30);
             else finishDate.setUTCDate(31);
         }
-        finishDate.seTDateHours(23,59,59);
+        finishDate.setHours(23);
+        finishDate.setMinutes(59);
+        finishDate.setSeconds(59);
+
         const query = { createdAt: {
-            $gte: dateStart, $lte: dateMax
+            $gte: startDate, $lte: finishDate 
         }};
 
         Invoice.find(query)
