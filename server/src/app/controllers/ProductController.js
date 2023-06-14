@@ -19,10 +19,10 @@ class ProductController {
         
         Product.findOne({name: req.body.name})
         .then(data => {
-            if (typeof data !== 'undefined') {
-                res.statusCode =402; res.json({msg: "product exists"});
-                return;
+            if (data) {
+                res.statusCode =402; res.json({msg: "product exists"});            
             }
+            return;
         })
         .catch(err => {
             res.statusCode =500; res.json({msg: err.message});
@@ -33,8 +33,8 @@ class ProductController {
         .then(data => {
             if (typeof data !== 'undefined') {
                 res.statusCode =402; res.json({msg: "product exists"});
-                return;
             }
+            return;
         })
         .catch(err => {
             res.statusCode =500; res.json({msg: err.message});
@@ -45,8 +45,9 @@ class ProductController {
         newProduct.save()
         .then(() => {
             res.statusCode =200; res.json({msg:"success"});
+            return;
         })
-        .catch(err => {res.statusCode =500; res.json({msg: err.message});});
+        .catch(err => {res.statusCode =500; res.json({msg: err.message}); return;});
     }
 
     //[GET] /products/totalpage
@@ -78,10 +79,14 @@ class ProductController {
                 res.statusCode =200; res.json({msg: 'success', data: data});
                 return;
             }
-            let x = parseInt((req.query.p-1) * 12)
-            if (x > (data.length - 1) / 12 + 1) { res.statusCode =402; res.json({msg: 'invalid page'}); return;}
-            res.statusCode =200; res.json({msg: 'success', data: data.splice(x, x + 12)});
-            return;
+            else {
+                let x = parseInt((req.query.p-1) * 12)
+                if (x > (data.length - 1) / 12 + 1) { res.statusCode =402; res.json({msg: 'invalid page'}); return;}
+                else {  
+                    res.statusCode =200; res.json({msg: 'success', data: data.splice(x, x + 12)});
+                    return;
+                }
+            }
         })
         .catch(err => {res.statusCode =500; res.json({msg: err.message});});
     }
@@ -95,28 +100,40 @@ class ProductController {
             res.statusCode =404; res.json({msg: 'invalid category'});
             return;
         }
-
-        Category.findById(req.body.categoryId)
-        .then(data => { 
-            if (data) {
-                res.statusCode =200; res.json({msg: 'success', data: data}); 
-                return;
-            }
-            res.statusCode =402; res.json({msg: 'not found'})
-            return;
-        })
-        .catch(err => { res.statusCode =500; res.json({msg: err.message}); return;});
-
-        Category.findOne({name: req.body.categoryName})
-        .then(data => { 
-            if (data) {
-                res.statusCode =200; res.json({msg: 'success', data: data}); 
-                return;
-            }
-            res.statusCode =402; res.json({msg: 'not found'})
-            return;
-        })
-        .catch(err => { res.statusCode =500; res.json({msg: err.message}); return;});
+        if (req.body.categoryId) {
+            Product.find({type_id: req.body.categoryId})
+            .then(data => { 
+                if (data) {
+                    res.statusCode =200; res.json({msg: 'success', data: data}); 
+                    return;
+                }
+                // res.statusCode =402; res.json({msg: 'not found'})
+                // return;
+            })
+            .catch(err => { res.statusCode =500; res.json({msg: err.message}); return;});
+        }
+        else {
+            Category.findOne({name: req.body.categoryName})
+            .then(data => { 
+                if (data) {
+                    Product.find({type_id: data._id})
+                    .then(products => {
+                        if (products) {
+                            res.statusCode =200; res.json({msg: 'success', data: products}); 
+                            return;
+                        }
+                        // res.statusCode =402; res.json({msg: 'not found'})
+                        // return;
+                    })
+                    .catch(err => { res.statusCode =500; res.json({msg: err.message}); return;});
+                }
+                else {
+                    res.statusCode =402; res.json({msg: 'not found'})
+                    return;
+                }
+            })
+            .catch(err => { res.statusCode =500; res.json({msg: err.message}); return;});
+        }
     }
 
     //[POST] /products/searchbycode
@@ -163,54 +180,57 @@ class ProductController {
             return;
         }
 
-        Product.findOne({code: req.body.code})
-        .then(data => {
-            if (data) {
-                res.statusCode =200; res.json({msg: 'success', data: data.storage});
-                return;
-            }
-        })
-        .catch(err => { res.statusCode =500; res.json({msg: err.message}); return;});
-
-        Product.findById(req.body.id)
-        .then(data => {
-            if (data) {
-                res.statusCode =200; res.json({msg: 'success', data: data.storage});
-                return;
-            }
-            
-            res.statusCode =404; res.json({msg: 'not found'});
-            return;
-        })
-        .catch(err => { res.statusCode =500; res.json({msg: err.message}); return;});
+        if (req.body.code) {
+            Product.findOne({code: req.body.code})
+            .then(data => {
+                if (data) {
+                    res.statusCode =200; res.json({msg: 'success', data: data.storage});
+                    return;
+                }
+            })
+            .catch(err => { res.statusCode =500; res.json({msg: err.message}); return;});
+        }
+        else {
+            Product.findById(req.body.id)
+            .then(data => {
+                if (data) {
+                    res.statusCode =200; res.json({msg: 'success', data: data.storage});
+                    return;
+                }
+                else {
+                    res.statusCode =404; res.json({msg: 'not found'});
+                    return;
+                }
+            })
+            .catch(err => { res.statusCode =500; res.json({msg: err.message}); return;});
+        }
     }
 
     //[POST] /products/adjustments/:id
-    pAdjustments(req, res, next) {
+    async pAdjustments(req, res, next) {
         if (typeof req.body.quantity === 'undefined') {
-            res.statusCode = 404;
-            res.json({msg: "invalid data"});
+            res.statusCode = 400;
+            res.json({ msg: "Invalid data" });
             return;
         }
-
-        const product = Product.findById(req.params.id);
-        if (typeof product.name === "string") {
-            product.quantity = req.body.quantity;
-            product.save()
-            .then(() => {
-                res.statusCode = 200;
-                res.json({msg: "Success"});
-            })
-            .catch(err => {
-                res.statusCode = 500;
-                res.json({msg: err.message});
-            })
-        }
-        else {
-            res.statusCode = 402;
-            res.json({msg: "Not found"});
+        
+        try {
+            const product = await Product.findById(req.params.id);
+            if (product) {
+            product.storage = req.body.quantity;
+            await product.save();
+            res.statusCode = 200;
+            res.json({ msg: "Success" });
+            } else {
+            res.statusCode = 404;
+            res.json({ msg: "Not found" });
+            }
+        } catch (err) {
+            res.statusCode = 500;
+            res.json({ msg: err.message });
         }
     }
+      
 }
 
 module.exports = new ProductController();

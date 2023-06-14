@@ -5,7 +5,7 @@ class FacilitiesController {
     pAddFacilities(req, res, next) {
         if (
             typeof req.body.name === 'undefined' ||
-            typeof req.body.decription === 'undefined' ||
+            typeof req.body.description === 'undefined' ||
             typeof req.body.quantity === 'undefined' ||
             typeof req.body.location === 'undefined'
         ) { 
@@ -130,7 +130,7 @@ class FacilitiesController {
 
     //[DELETE] /facilities/delete/:id
     dDeleteFacilities(req, res, next) {
-        Facilities.findByIdAndDelete(body.params.id)
+        Facilities.findByIdAndDelete(req.params.id)
         .then(() => {
             res.statusCode =200; res.json({msg: "success"});
             return;

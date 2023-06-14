@@ -24,25 +24,26 @@ class StaffController {
                 res.json({msg: "staff is existing"});
                 return;
             }
+            else {
+                const staff = new Staff(req.body);
+
+                staff.save()
+                .then(() => {
+                    res.statusCode = 200;
+                    res.json({msg: "success"});
+                })
+                .catch(err => {
+                    res.statusCode = 500;
+                    res.json({msg: err.message});
+                })  
+            }
+            
         })
         .catch(err => {
             res.statusCode = 500;
             res.json({msg: err.message});
             return;
         })
-
-        const staff = new Staff(req.body);
-
-        staff.save()
-        .then(() => {
-            res.statusCode = 200;
-            res.json({msg: "success"});
-        })
-        .catch(err => {
-            res.statusCode = 500;
-            res.json({msg: err.message});
-        })
-
     }
 
     // [POST] /staff/update
@@ -60,19 +61,8 @@ class StaffController {
             return;
         }
 
-        Staff.findOne({phoneNumber: req.body.phoneNumber})
-        .then(data => {
-            if (data) {
-                res.statusCode =402; res.json({msg: "phone number is existed"});
-                return;
-            }
-        })
-        .catch(err => {
-            res.statusCode =500; res.json({msg: err.message});
-            return;
-        })
-
-        Staff.findByIdAndUpdate(id, req.body)
+       
+        Staff.findByIdAndUpdate(req.body.id, req.body)
         .then(() => {
             res.statusCode =200; res.json({msg:"success"});
             return;
@@ -105,14 +95,14 @@ class StaffController {
         });
     }
 
-    // [POST] /staff/delete
+    // [DELETE] /staff/delete
     pDeleteStaff(req, res, next) {
         if (typeof req.body.id === 'undefined') {
             res.statusCode =404; res.json({msg: "invalid id"});
             return;
         }
 
-        Staff.deleteById(req.body.id)
+        Staff.findByIdAndDelete(req.body.id)
         .then(() => {
             res.statusCode =200; res.json({msg: "success"});
             return;
@@ -135,7 +125,7 @@ class StaffController {
         Staff.findById(req.params.id)
         .then((data) => {
             if (data) {
-                Staff.updateOne({_id: req.params.id}, {salary: salary})
+                Staff.updateOne({_id: req.params.id}, {salary: req.body.salary})
                 .then(() => {
                     res.statusCode = 200;
                     res.json({msg: "success"});
@@ -146,9 +136,11 @@ class StaffController {
                     res.json({msg: err.message});
                     return;
                 })
-            }
-            res.statusCode = 402;
-            res.json({msg: "Not found"});
+            } else {
+                res.statusCode = 402;
+                res.json({msg: "Not found"});             
+                return;
+            }         
         })
         .catch(err => {
             res.statusCode = 500;
@@ -179,9 +171,11 @@ class StaffController {
                     return;
                 })
             }
+            else {
+                res.statusCode = 402;
+                res.json({msg: "not found"});
+            }
 
-            res.statusCode = 402;
-            res.json({msg: "not found"});
         })
         .catch((err) => {
             res.statusCode = 500;
@@ -202,7 +196,7 @@ class StaffController {
         .then((data) => {
             if (data) {
                 res.statusCode = 200;
-                res.json({msg: 'success', data, count: data.length()    });
+                res.json({msg: 'success', data, count: data.length    });
                 return;
             } 
             res.statusCode = 402; 
@@ -227,17 +221,23 @@ class StaffController {
         .then(async (data) => {
             if (data) 
             {
-                const ws = await WS.find({staffId: req.params.id, date_month: data.body.month, date_year: data.body.year})
-                ws.then(async (workSchedules) => {
+                await WS.find({staffId: req.params.id, date_month: req.body.month, date_year: req.body.year})
+                .then(async (workSchedules) => {
                     let salary = (workSchedules.length + 1) * data.salary;
 
                     res.statusCode = 200;
                     res.json({msg: "success", ws: (workSchedules.length + 1), salary: salary})
                 })
+                .catch(err => {
+                    res.statusCode = 500;
+                    res.json({msg: err.message});
+                })
             }
-            res.statusCode = 402;
-            res.json({msg: "not found"});
-            return;
+            else {
+                res.statusCode = 402;
+                res.json({msg: "not found"});
+                return;
+            }
         })
     }
 }

@@ -9,7 +9,7 @@ const user = new Schema({
     firstName: String,
     lastName: String,
     address: String,
-    salary: String,
+    salary: {type: Number, defaultValue: 100, set: function(val) { return parseInt(val, 10)}},
     shift: {type: Number, set: function (value) { return parseInt(value, 10);}},
 })
 

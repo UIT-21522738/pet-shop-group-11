@@ -5,7 +5,8 @@ async function connect() {
         await mongoose.connect('mongodb+srv://21522738:p12345678@cluster0.tcpoibe.mongodb.net/Petshop');
         console.log('connect success')
     } catch (error) {
-        console.log('connect failure')
+        console.log('connect failure');
+        console.log(error)
     }
 }
 
