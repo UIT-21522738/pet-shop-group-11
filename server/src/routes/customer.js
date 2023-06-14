@@ -3,6 +3,9 @@ const router = express.Router();
 
 const customer = require('../app/controllers/CustomerController');
 
+// Lấy danh sách toàn bộ khách hàng
+router.get('/getall', customer.gAllCustomer);
+
 // Update chỉ số vip
 router.post('/vip/update/:id', customer.pUpdateVip)
 

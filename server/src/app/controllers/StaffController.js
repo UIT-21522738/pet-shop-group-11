@@ -240,6 +240,21 @@ class StaffController {
             }
         })
     }
+
+    //[GET] /staff/getall
+    gAllStaff(req, res, next) {
+        Staff.find()
+        .then(data => {
+            res.statusCode = 200;
+            res.json({msg: "success", data: data});
+            return;
+        })
+        .catch(err => {
+            res.statusCode = 500;
+            res.json({msg: err.message});
+            return;
+        });
+    }
 }
 
 module.exports = new StaffController();
