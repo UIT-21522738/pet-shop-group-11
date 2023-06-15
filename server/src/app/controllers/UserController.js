@@ -92,7 +92,7 @@ class UserController {
                     return ;
                 }
                 else {
-                    res.statusCode =200; res.json({msg: "success", data: data._id});
+                    res.statusCode =200; res.json({msg: "success", data: data._id, role: data.role});
                     return;
                 }
             })
