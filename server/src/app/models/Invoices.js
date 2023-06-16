@@ -7,6 +7,7 @@ const Schema = mongoose.Schema;
 const invoice = new Schema({
     customerId: String,
     staffId: String,
+    
     totalPrice: {type: Number, set: function (value) { return parseInt(value, 10);}},
     discount: {type: Number, set: function (value) { return parseInt(value, 10);}},
     createdAt: { type: Date, default: Date.now },

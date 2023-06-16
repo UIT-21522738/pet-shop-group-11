@@ -76,9 +76,8 @@ class UserController {
         }
         const token = req.params.token;
 
-        var id = ''
         // lấy id từ token
-        try {id = jwt.verify(token, 'petshop')}
+        try {var id = jwt.verify(token, 'petshop')}
         catch (e) {
             res.statusCode =500; res.json({msg: e.message});
             return;

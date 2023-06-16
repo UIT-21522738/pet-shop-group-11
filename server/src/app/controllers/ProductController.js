@@ -19,7 +19,7 @@ class ProductController {
             return;
         }
 
-        try {id = jwt.verify(token, 'petshop')}
+        try {var id = jwt.verify(token, 'petshop')}
         catch (e) {
             res.statusCode =500; res.json({msg: e.message});
             return;
@@ -29,7 +29,7 @@ class ProductController {
 
         User.findById(id)
         .then(data => {
-            body.creater = data.name;
+            body.creater = data.code;
         })
         .catch(err => { console.log(err); return;});
         
@@ -104,6 +104,42 @@ class ProductController {
             }
         })
         .catch(err => {res.statusCode =500; res.json({msg: err.message});});
+    }
+
+    //[PUT] /products/update
+    pUpdateProduct(req, res, next) {
+        if (
+            (typeof req.body.name        === 'undefined' &&
+            typeof req.body.price       === 'undefined' &&
+            typeof req.body.storage     === 'undefined' &&
+            typeof req.body.description === 'undefined' &&
+            typeof req.body.typeName    === 'undefined' &&
+            typeof req.body.brand       === 'undefined') ||
+            typeof req.body.id === 'undefined'
+        ) {
+            res.statusCode = 404;
+            res.json({msg: "invalid data"})
+            return;
+        }
+
+        var body = req.body;
+        body.id = '';
+        if (body.typeName) {
+            Category.findOne({name: body.typeName})
+            .then(data => {
+                body.typeId = data._id.toString();
+                return;
+            })
+            .catch(err => { console.log(err); return;})
+        }
+        Product.findByIdAndUpdate(body.id, body)
+        .then(data => {
+            res.statusCode = 200;
+            res.json({msg: "success"})
+            return;
+        })
+        .catch(err => { console.log(err.message); return;});
+        
     }
 
     //[POST] /products/search

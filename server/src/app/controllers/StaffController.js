@@ -1,21 +1,48 @@
 const Staff = require('../models/Users');
 const WS = require('../models/Work_schedule');
+const jwt = require('jsonwebtoken');
 
 class StaffController {
     // [POST] /staff/create
     pCreateStaff(req, res, next) {
         if ( 
+            typeof req.body.username === 'undefined' ||
+            typeof req.body.password === 'undefined' ||
             typeof req.body.firstName === 'undefined' ||
             typeof req.body.lastName === 'undefined' ||
             typeof req.body.phoneNumber === 'undefined' ||
             typeof req.body.shift === 'undefined' ||
             typeof req.body.salary === 'undefined' ||
-            typeof req.body.address === 'undefined'         
+            typeof req.body.address === 'undefined' ||
+            typeof req.body.token === 'undefined'   ||
+            typeof req.body.gender === 'undefined'  ||
+            typeof req.body.birthday === 'undefined' 
         ) {
             res.statusCode = 404;
             res.json({msg: "invalid data"});
             return;
         }
+
+        try {var id = jwt.verify(token, 'petshop')}
+        catch (e) {
+            res.statusCode =500; res.json({msg: e.message});
+            return;
+        }
+        var body = req.body;
+
+        const parts = req.body.birthday.split('/');
+        const day = parts[0];
+        const month = parts[1];
+        const year = parts[2];
+
+        var birthday = new Date(year, month - 1, day);
+
+        body.birthday = birthday;
+
+        Staff.findById(id)
+        .then(data => {
+            body.creater = data.code;
+        })
 
         Staff.findOne({phoneNumber: req.body.phoneNumber})
         .then(data => {
@@ -25,7 +52,15 @@ class StaffController {
                 return;
             }
             else {
-                const staff = new Staff(req.body);
+                const count = Staff.countDocuments();
+                if (count < 9) {
+                    body.code = `NV0${count+1}`;
+                }
+                else {
+                    body.code = `NV${count+1}`;
+                }
+                
+                const staff = new Staff(body);
 
                 staff.save()
                 .then(() => {
@@ -37,7 +72,6 @@ class StaffController {
                     res.json({msg: err.message});
                 })  
             }
-            
         })
         .catch(err => {
             res.statusCode = 500;

@@ -7,6 +7,7 @@ const facilities = new Schema({
     description: String,
     quantity: {type: Number, set: function (value) { return parseInt(value, 10);}},
     location: String,
+    creater: String,
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
 });

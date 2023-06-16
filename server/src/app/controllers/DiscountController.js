@@ -1,4 +1,6 @@
 const Discount = require('../models/Discounts');
+const Users = require('../models/Users');
+const jwt = require('jsonwebtoken');
 
 class DiscountController {
     //[POST] /discount/create
@@ -12,7 +14,8 @@ class DiscountController {
             typeof req.body.endMonth === 'undefined' ||
             typeof req.body.endYear === 'undefined' ||
             typeof req.body.endDate === 'undefined' ||
-            typeof req.body.percent === 'undefined' 
+            typeof req.body.percent === 'undefined' ||
+            typeof req.body.token === 'undefined' 
         ) {
             res.statusCode = 404;
             res.json({msg: "invalid data"});
@@ -37,12 +40,34 @@ class DiscountController {
         endDate.setMinutes(59);
         endDate.setSeconds(59);
 
+        try {var id = jwt.verify(token, 'petshop')}
+        catch (e) {
+            res.statusCode =500; res.json({msg: e.message});
+            return;
+        }
+
+        var creater = '';
+        Users.findById(id)
+        .then(data => {
+            creater = data.code;
+        })
+
+        const count = Users.countDocuments();
+        if (count < 9) {
+            var code = `CP0${count+1}`;
+        }
+        else {
+            var code = `CP${count+1}`;
+        }
+
         const discount = {
             name: req.body.name,
             description: req.body.description,
             startDate: startDate,
             endDate: endDate,
-            discount_percentage: req.body.percent
+            percent: req.body.percent,
+            creater: creater,
+            idCoupon: code
         }
 
         const newDiscount = new Discount(discount);

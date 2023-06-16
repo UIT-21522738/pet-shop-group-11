@@ -15,7 +15,6 @@ const product = new Schema({
     description: String,
     brand: String,
     createrId: String,
-    img: String,
     code: String,
     slug: { type: String, slug: "name", unique: true},
     createdAt: { type: Date, default: Date.now },

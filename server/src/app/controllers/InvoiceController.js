@@ -4,7 +4,8 @@ const Invoice = require('../models/Invoices');
 const Staff = require('../models/Users');
 const Invoice_details = require('../models/Invoice_details');
 const Invoices = require('../models/Invoices');
-
+const Users = require('../models/Users');
+const jwt = require('jsonwebtoken');
 
 //sử dụng hàm bất đồng bộ để lấy giá của các sản phẩm.
 async function getPrice(products)
@@ -25,16 +26,29 @@ class SellController {
     //[POST] /invoice/create
     async pCreateInvoice(req, res, next) {
         if (
-            typeof req.body.staffId === 'undefined' ||
             typeof req.body.customerId === 'undefined' ||
             typeof req.body.products === 'undefined' ||
             typeof req.body.quantity === 'undefined' ||
-            typeof req.body.discount === 'undefined' 
+            typeof req.body.discount === 'undefined' ||
+            typeof req.body.token === 'undefined' 
         ) {
             res.statusCode = (404);
             res.json({msg: "invalid data"});
             return;
         }
+
+        try {var id = jwt.verify(token, 'petshop')}
+        catch (e) {
+            res.statusCode =500; res.json({msg: e.message});
+            return;
+        }
+
+        var code ='';
+        Users.findById(id)
+        .then(data => {
+            code = data.code;
+        })
+
         let products = req.body.products;
         let quantities = req.body.quantity;
         let products_price = await getPrice(products);
@@ -46,9 +60,10 @@ class SellController {
         //tạo hóa đơn
         let invoice = new Invoice({
             customerId: req.body.customerId,
-            staffId: req.body.staffId,
+            staffId: id,
             discount: parseFloat(req.body.discount),
-            totalPrice: sum * (1 - parseFloat(req.body.discount))
+            totalPrice: sum * (1 - parseFloat(req.body.discount)),
+            creater: code
         });
         invoice.save()
         .then(async (data) => {
