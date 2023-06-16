@@ -1,4 +1,6 @@
 const Facilities = require('../models/Facilities');
+const User = require('../models/Users');
+const jwt = require('jsonwebtoken')
 
 class FacilitiesController {
     //[POST] /facilities/add
@@ -7,12 +9,25 @@ class FacilitiesController {
             typeof req.body.name === 'undefined' ||
             typeof req.body.description === 'undefined' ||
             typeof req.body.quantity === 'undefined' ||
-            typeof req.body.location === 'undefined'
+            typeof req.body.location === 'undefined' ||
+            typeof req.body.token === 'undefined' 
         ) { 
             res.statusCode = 404;
             res.json({msg: "invalid data"});
             return;
         }
+
+        try {var id = jwt.verify(token, 'petshop')}
+        catch (e) {
+            res.statusCode =500; res.json({msg: e.message});
+            return;
+        }
+        var body = req.body;
+
+        User.findById(id)
+        .then((data) => {
+            body.creater = data.code;
+        })
 
         const facility = new Facilities(req.body);
         facility.save()

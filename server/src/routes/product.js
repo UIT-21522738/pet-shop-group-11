@@ -3,6 +3,8 @@ const router = express.Router();
 
 const ProductController = require('../app/controllers/ProductController');
 
+//cập nhật sản phẩm
+router.put('/update', ProductController.pUpdateProduct);
 //lấy danh sách sản phẩm
 router.post('/search', ProductController.pSearch);
 //kiểm tra kho
