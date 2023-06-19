@@ -255,19 +255,19 @@ class ProductController {
         }
         else if (req.body.code) 
         {
-            Product.findOne({code: req.body.code})
-            .then(data => {
-                if (data) {
-                    Category.findById(data.typeId)
-                    .then(cate => {
-                        data.typeName = cate.name;
-                        res.statusCode =200; res.json({msg: 'success', data: [data]});
-                        return;
+            Product.find({code: {$regex: req.body.code, $options: 'i'}})
+            .then(async data => {
+                if (data) {                    
+                    const p = await promise(data);
+                    await Promise.all(p)
+                    .then(async products => {
+                        res.statusCode =200; res.json({msg: 'success', data: products});
                     })
-                    .catch(err => {
-                        res.statusCode =500; res.json({msg: err.message});
-                        return;
+                    .catch(async error => {
+                        res.statusCode = 500; 
+                        res.json({msg: error.message});
                     })
+                    return;
                 }
                 else {
                     res.statusCode =402; res.json({msg: 'not found'});
