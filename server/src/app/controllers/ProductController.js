@@ -3,6 +3,31 @@ const Category = require('../models/Category');
 const User = require('../models/Users');
 const iconv = require('iconv-lite')
 
+// thêm key và value vào object tránh bất đồng bộ
+async function promise(data){
+    const promises = await data.map(async item => {
+        const cate = await Category.findById(item.typeId);
+        if (cate) {
+            const updatedItem = {
+                name: item.name,
+                code: item.code,
+                description: item.description,
+                typeId: item.typeId,
+                typeName: cate.name,
+                storage: item.storage,
+                brand: item.brand,
+                price: item.price,
+                createrId: item.createrId,
+                createdAt: item.createdAt,
+                updatedAt: item.updatedAt
+            };
+            return updatedItem;
+        }
+        return item;
+    });
+    return promises;
+}
+
 class ProductController {
     // [POST] /products/create
     // thêm sản phẩm
@@ -91,28 +116,28 @@ class ProductController {
         Product.find({})
         .then(async data => {
             if (req.query.p === '0') {
-                const promises = data.map(async item => {
-                    const cate = await Category.findById(item.typeId);
-                    if (cate) {
-                        const updatedItem = {
-                            name: item.name,
-                            code: item.code,
-                            description: item.description,
-                            typeId: item.typeId,
-                            typeName: cate.name,
-                            storage: item.storage,
-                            brand: item.brand,
-                            price: item.price,
-                            createrId: item.createrId,
-                            createdAt: item.createdAt,
-                            updatedAt: item.updatedAt
-                        };
-                        return updatedItem;
-                    }
-                    return item;
-                });
-                  
-                await Promise.all(promises)
+                // const promises = data.map(async item => {
+                //     const cate = await Category.findById(item.typeId);
+                //     if (cate) {
+                //         const updatedItem = {
+                //             name: item.name,
+                //             code: item.code,
+                //             description: item.description,
+                //             typeId: item.typeId,
+                //             typeName: cate.name,
+                //             storage: item.storage,
+                //             brand: item.brand,
+                //             price: item.price,
+                //             createrId: item.createrId,
+                //             createdAt: item.createdAt,
+                //             updatedAt: item.updatedAt
+                //         };
+                //         return updatedItem;
+                //     }
+                //     return item;
+                // });
+                const p = await promise(data);
+                await Promise.all(p)
                 .then(updatedData => {
                     console.log(updatedData[0]);
                     res.statusCode = 200;
@@ -132,28 +157,9 @@ class ProductController {
                     return;
                 } else {
                     const modifiedData = data.slice(x, x + 12);
-                    var promises = modifiedData.map(async item => {
-                        const cate = await Category.findById(item.typeId);
-                        if (cate) {
-                            const updatedItem = {
-                                name: item.name,
-                                code: item.code,
-                                description: item.description,
-                                typeId: item.typeId,
-                                typeName: cate.name,
-                                storage: item.storage,
-                                brand: item.brand,
-                                price: item.price,
-                                createrId: item.createrId,
-                                createdAt: item.createdAt,
-                                updatedAt: item.updatedAt
-                            };
-                            return updatedItem;
-                        }
-                        return item;
-                    });
+                    var p = await promise(modifiedData);
                 }
-                await Promise.all(promises)
+                await Promise.all(p)
                 .then(updatedData => {
                     res.statusCode = 200;
                     res.json({ msg: 'success', data: updatedData });
@@ -212,13 +218,15 @@ class ProductController {
         if(
             typeof req.body.typeName === 'undefined' &&
             typeof req.body.typeId   === 'undefined' &&
-            // typeof req.body.code === 'undefined' &&
+            typeof req.body.code === 'undefined' &&
             typeof req.body.name === 'undefined' &&
             typeof req.body.storage === 'undefined' &&
-            typeof req.body.price === 'undefined'
+            typeof req.body.price === 'undefined'  &&
+            typeof req.body.brand === 'undefined' 
         ) {
             req.statusCode = 404;
             req.json({msg: 'invalid data'});   
+            return;
         }
         else if (req.body.name)
         {
@@ -227,40 +235,65 @@ class ProductController {
             const encodedString = utf.toString('utf8')
             console.log(encodedString)
             Product.find({$text: {$search: encodedString}})
-            .then(data => {
+            .then(async data => {
                 if (data) {
-                    res.statusCode =200; res.json({msg: 'success', data: data});
+                    const p = await promise(data);
+                    await Promise.all(p)
+                    .then(async products => {
+                        res.statusCode =200; res.json({msg: 'success', data: products});
+                    })
+                    .catch(async error => {
+                        res.statusCode = 500; 
+                        res.json({msg: error.message});
+                    })
                     return;
                 }
-                
                 res.statusCode =404; res.json({msg: 'not found'});
                 return;
             })
             .catch(err => { res.statusCode =500; res.json({msg: err.message}); return;});
         }
-        // else if (req.body.code) 
-        // {
-        //     Product.findOne({code: req.body.code})
-        //     .then(data => {
-        //         if (data) {
-        //             res.statusCode =200; res.json({msg: 'success', data: [data]});
-        //             return;
-        //         }
-        //         res.statusCode =402; res.json({msg: 'not found'});
-        //         return;
-        //     })
-        //     .catch(err => { res.statusCode =500; res.json({msg: err.message}); return;});
-        // }
+        else if (req.body.code) 
+        {
+            Product.findOne({code: req.body.code})
+            .then(data => {
+                if (data) {
+                    Category.findById(data.typeId)
+                    .then(cate => {
+                        data.typeName = cate.name;
+                        res.statusCode =200; res.json({msg: 'success', data: [data]});
+                        return;
+                    })
+                    .catch(err => {
+                        res.statusCode =500; res.json({msg: err.message});
+                        return;
+                    })
+                }
+                else {
+                    res.statusCode =402; res.json({msg: 'not found'});
+                    return;
+                }
+            })
+            .catch(err => { res.statusCode =500; res.json({msg: err.message}); return;});
+        }
         else if (req.body.typeId)
         {
             Product.find({typeId: req.body.typeId})
-            .then(data => { 
+            .then(async data => { 
                 if (data) {
-                    res.statusCode =200; res.json({msg: 'success', data: data}); 
+                    const p = await promise(data);
+                    await Promise.all(p)
+                    .then(async products => {
+                        res.statusCode =200; res.json({msg: 'success', data: products});
+                    })
+                    .catch(async error => {
+                        res.statusCode = 500; 
+                        res.json({msg: error.message});
+                    })
                     return;
                 }
-                // res.statusCode =402; res.json({msg: 'not found'})
-                // return;
+                res.statusCode =402; res.json({msg: 'not found'})
+                return;
             })
             .catch(err => { res.statusCode =500; res.json({msg: err.message}); return;});
         }
@@ -270,9 +303,17 @@ class ProductController {
             .then(data => { 
                 if (data) {
                     Product.find({typeId: data._id})
-                    .then(products => {
+                    .then(async products => {
                         if (products) {
-                            res.statusCode =200; res.json({msg: 'success', data: products}); 
+                            const p = await promise(products);
+                            await Promise.all(p)
+                            .then(async prods => {
+                                res.statusCode =200; res.json({msg: 'success', data: prods});
+                            })
+                            .catch(async error => {
+                                res.statusCode = 500; 
+                                res.json({msg: error.message});
+                            })
                             return;
                         }
                         // res.statusCode =402; res.json({msg: 'not found'})
@@ -290,8 +331,16 @@ class ProductController {
         else if (req.body.storage)
         {
             Product.find({storage: parseInt(req.body.storage)})
-            .then(data => {
-                res.statusCode =200; res.json({msg: 'success', data});
+            .then(async data => {
+                const p = await promise(data);
+                await Promise.all(p)
+                .then(async products => {
+                    res.statusCode =200; res.json({msg: 'success', data: products});
+                })
+                .catch(async error => {
+                    res.statusCode = 500; 
+                    res.json({msg: error.message});
+                })
                 return;
             })
             .catch(err => { res.statusCode =500; res.json({msg: err.message}); return;});
@@ -299,14 +348,37 @@ class ProductController {
         else if (req.body.price)
         {
             Product.find({price: parseInt(req.body.price)})
-            .then(data => {
-                res.statusCode = 200; 
-                res.json({msg: "success", data});
+            .then(async data => {
+                const p = await promise(data);
+                await Promise.all(p)
+                .then(async products => {
+                    res.statusCode =200; res.json({msg: 'success', data: products});
+                })
+                .catch(async error => {
+                    res.statusCode = 500; 
+                    res.json({msg: error.message});
+                })
                 return;
             })
             .catch(err => {
                 res.statusCode = 500;
                 res.json({msg: err.message});
+                return;
+            })
+        }
+        else if (req.body.brand)
+        {
+            Product.find({brand: req.body.brand})
+            .then(async products => {
+                const p = await promise(products);
+                await Promise.all(p)
+                .then(async prods => {
+                    res.statusCode =200; res.json({msg: 'success', data: prods});
+                })
+                .catch(async error => {
+                    res.statusCode = 500; 
+                    res.json({msg: error.message});
+                })
                 return;
             })
         }
