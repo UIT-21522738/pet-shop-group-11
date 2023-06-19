@@ -1,6 +1,7 @@
 const Product = require('../models/Products');
 const Category = require('../models/Category');
 const User = require('../models/Users');
+const iconv = require('iconv-lite')
 
 class ProductController {
     // [POST] /products/create
@@ -79,32 +80,96 @@ class ProductController {
     // [GET] /products/get?p=...
     // lấy danh sách sản phẩm theo trang hoặc tất cả
     getProducts(req, res, next) {
-        if (typeof req.query.p   === 'undefined')
-        {
-            res.statusCode =402; res.json({msg: 'invalid query'});
-            return;
+        if (typeof req.query.p === 'undefined') {
+          res.statusCode = 402;
+          res.json({ msg: 'invalid query' });
+          return;
         }
-
+      
         // p = 0 nghĩa là lấy tất cả danh sách sản phẩm.
-        
+      
         Product.find({})
-        .then(data => {
-            if (req.query.p === '0') 
-            {
-                res.statusCode =200; res.json({msg: 'success', data: data});
-                return;
-            }
-            else {
-                let x = parseInt((req.query.p-1) * 12)
-                if (x > (data.length - 1) / 12 + 1) { res.statusCode =402; res.json({msg: 'invalid page'}); return;}
-                else {  
-                    res.statusCode =200; res.json({msg: 'success', data: data.splice(x, x + 12)});
+        .then(async data => {
+            if (req.query.p === '0') {
+                const promises = data.map(async item => {
+                    const cate = await Category.findById(item.typeId);
+                    if (cate) {
+                        const updatedItem = {
+                            name: item.name,
+                            code: item.code,
+                            description: item.description,
+                            typeId: item.typeId,
+                            typeName: cate.name,
+                            storage: item.storage,
+                            brand: item.brand,
+                            price: item.price,
+                            createrId: item.createrId,
+                            createdAt: item.createdAt,
+                            updatedAt: item.updatedAt
+                        };
+                        return updatedItem;
+                    }
+                    return item;
+                });
+                  
+                await Promise.all(promises)
+                .then(updatedData => {
+                    console.log(updatedData[0]);
+                    res.statusCode = 200;
+                    res.json({ msg: 'success', data: updatedData });
+                })
+                .catch(err => {
+                    res.statusCode = 500;
+                    res.json({ msg: err.message });
+                });
+                  
+                return;                  
+            } else {
+                let x = parseInt((req.query.p - 1) * 12);
+                if (x > (data.length - 1) / 12 + 1) {
+                    res.statusCode = 402;
+                    res.json({ msg: 'invalid page' });
                     return;
+                } else {
+                    const modifiedData = data.slice(x, x + 12);
+                    var promises = modifiedData.map(async item => {
+                        const cate = await Category.findById(item.typeId);
+                        if (cate) {
+                            const updatedItem = {
+                                name: item.name,
+                                code: item.code,
+                                description: item.description,
+                                typeId: item.typeId,
+                                typeName: cate.name,
+                                storage: item.storage,
+                                brand: item.brand,
+                                price: item.price,
+                                createrId: item.createrId,
+                                createdAt: item.createdAt,
+                                updatedAt: item.updatedAt
+                            };
+                            return updatedItem;
+                        }
+                        return item;
+                    });
                 }
+                await Promise.all(promises)
+                .then(updatedData => {
+                    res.statusCode = 200;
+                    res.json({ msg: 'success', data: updatedData });
+                })
+                .catch(err => {
+                    res.statusCode = 500;
+                    res.json({ msg: err.message });
+                });
             }
-        })
-        .catch(err => {res.statusCode =500; res.json({msg: err.message});});
-    }
+          })
+        .catch(err => {
+            res.statusCode = 500;
+            res.json({ msg: err.message });
+        });
+      }
+      
 
     //[PUT] /products/update
     pUpdateProduct(req, res, next) {
@@ -143,7 +208,7 @@ class ProductController {
     }
 
     //[POST] /products/search
-    pSearch(req, res, next) {
+    async pSearch(req, res, next) {
         if(
             typeof req.body.typeName === 'undefined' &&
             typeof req.body.typeId   === 'undefined' &&
@@ -153,11 +218,15 @@ class ProductController {
             typeof req.body.price === 'undefined'
         ) {
             req.statusCode = 404;
-            req.json('invalid data');   
+            req.json({msg: 'invalid data'});   
         }
         else if (req.body.name)
         {
-            Product.find({name: {$regex: req.body.name, $options: 'i'}})
+            // const encodedString = convertToUTF8(req.body.name);
+            const utf = iconv.encode(req.body.name,'utf8');
+            const encodedString = utf.toString('utf8')
+            console.log(encodedString)
+            Product.find({$text: {$search: encodedString}})
             .then(data => {
                 if (data) {
                     res.statusCode =200; res.json({msg: 'success', data: data});
@@ -197,7 +266,7 @@ class ProductController {
         }
         else if (req.body.typeName)
         {
-            Category.findOne({name: {$regex: req.body.typeName, $options: 'i'}})
+            Category.findOne({$text: {$search: req.body.typeName}})
             .then(data => { 
                 if (data) {
                     Product.find({typeId: data._id})

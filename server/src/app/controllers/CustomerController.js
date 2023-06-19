@@ -26,6 +26,8 @@ class CustomerController {
             return;
         }
         var body = req.body;
+        const count = Customer.countDocuments();
+        body.code = `KH${count+1}`;
 
         const parts = req.body.birthday.split('/');
         const day = parts[0];
@@ -100,10 +102,10 @@ class CustomerController {
     // [PUT] /customer/update/:id
     updateCustomer(req, res, next) {
         if (
-            typeof req.body.firstName === 'undefined' ||
-            typeof req.body.lastName === 'undefined' ||
-            typeof req.body.phoneNumber === 'undefined' ||
-            typeof req.body.vip === 'undefined'
+            (typeof req.body.firstName === 'undefined' &&
+            typeof req.body.lastName === 'undefined' &&
+            typeof req.body.phoneNumber === 'undefined' &&
+            typeof req.body.vip === 'undefined')
         ) {
             res.statusCode = 404;
             res.json({ msg: "invalid data" });

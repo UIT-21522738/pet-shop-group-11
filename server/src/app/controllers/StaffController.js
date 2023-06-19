@@ -83,12 +83,12 @@ class StaffController {
     // [POST] /staff/update
     pUpdateStaff(req, res, next) {
         if (
-            typeof req.body.firstName === 'undefined' ||
-            typeof req.body.lastName  === 'undefined' ||
-            typeof req.body.phoneNumber === 'undefined' ||
-            typeof req.body.shift === 'undefined' ||
-            typeof req.body.salary === 'undefined' ||
-            typeof req.body.address === 'undefined' ||
+            (typeof req.body.firstName === 'undefined' &&
+            typeof req.body.lastName  === 'undefined' &&
+            typeof req.body.phoneNumber === 'undefined' &&
+            typeof req.body.shift === 'undefined' &&
+            typeof req.body.salary === 'undefined' &&
+            typeof req.body.address === 'undefined') &&
             typeof req.body.id === 'undefined'
         ) {
             res.statusCode =404; res.json({msg: "invalid data"});

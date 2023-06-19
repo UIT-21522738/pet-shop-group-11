@@ -9,6 +9,9 @@ const customer = new Schema({
     firstName: String,
     phoneNumber: {type: String, unique: true},
     vip: {type: Boolean, default: false},
+    birthDay: String,
+    gender: String,
+    creater: String,
     scrore: {type: Number, default: 0, set: function(v) {return parseInt(v);}},
     createdAt: { type: Date, default: Date.now },
 });
