@@ -7,8 +7,7 @@ class CustomerController {
     //thêm một khách hàng
     async addCustomer(req, res, next) {
         if (
-            typeof req.body.firstName === 'undefined' ||
-            typeof req.body.lastName === 'undefined' ||
+            typeof req.body.name === 'undefined' ||
             typeof req.body.phoneNumber === 'undefined' ||
             typeof req.body.vip === 'undefined' ||
             typeof req.body.gender === 'undefined' ||
@@ -20,23 +19,24 @@ class CustomerController {
             return;
         }
         
-        try {var id = jwt.verify(token, 'petshop')}
+        try {var id = jwt.verify(req.body.token, 'petshop')}
         catch (e) {
             res.statusCode =500; res.json({msg: e.message});
             return;
         }
         var body = req.body;
-        const count = Customer.countDocuments();
-        body.code = `KH${count+1}`;
+        const count = await Customer.countDocuments({});
+        body.code = `KH${parseInt(count)+1}`;
 
         const parts = req.body.birthday.split('/');
-        const day = parts[0];
-        const month = parts[1];
-        const year = parts[2];
+        const day = parseInt(parts[0]);
+        const month = parseInt(parts[1]);
+        const year = parseInt(parts[2]);
 
         var birthday = new Date(year, month - 1, day);
 
         body.birthday = birthday;
+        console.log(birthday)
 
         Users.findById(id)
         .then(data => {
@@ -102,8 +102,7 @@ class CustomerController {
     // [PUT] /customer/update/:id
     updateCustomer(req, res, next) {
         if (
-            (typeof req.body.firstName === 'undefined' &&
-            typeof req.body.lastName === 'undefined' &&
+            (typeof req.body.name === 'undefined' &&
             typeof req.body.phoneNumber === 'undefined' &&
             typeof req.body.vip === 'undefined')
         ) {

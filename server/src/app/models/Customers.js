@@ -5,12 +5,12 @@ const Schema = mongoose.Schema;
 
 // định nghĩa 1 customer
 const customer = new Schema({
-    lastName: String,
-    firstName: String,
+    name: String,
     phoneNumber: {type: String, unique: true},
     vip: {type: Boolean, default: false},
-    birthDay: String,
+    birthday: Date,
     gender: String,
+    code: String,
     creater: String,
     scrore: {type: Number, default: 0, set: function(v) {return parseInt(v);}},
     createdAt: { type: Date, default: Date.now },

@@ -40,7 +40,7 @@ class DiscountController {
         endDate.setMinutes(59);
         endDate.setSeconds(59);
 
-        try {var id = jwt.verify(token, 'petshop')}
+        try {var id = jwt.verify(req.body.token, 'petshop')}
         catch (e) {
             res.statusCode =500; res.json({msg: e.message});
             return;
