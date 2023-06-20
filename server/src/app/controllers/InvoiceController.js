@@ -60,7 +60,7 @@ class SellController {
         await new Promise((resolve, reject) => setTimeout(resolve,500));
         //tạo hóa đơn
         let invoice = new Invoice({
-            customerPhone: req.body.customerPhoneNumber,
+            customerPhoneNumber: req.body.customerPhoneNumber,
             staffId: id,
             discount: parseFloat(req.body.discount),
             totalPrice: sum * (1 - parseFloat(req.body.discount)),
