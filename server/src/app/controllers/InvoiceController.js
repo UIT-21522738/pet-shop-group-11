@@ -26,7 +26,7 @@ class SellController {
     //[POST] /invoice/create
     async pCreateInvoice(req, res, next) {
         if (
-            typeof req.body.customerId === 'undefined' ||
+            typeof req.body.customerPhoneNumber === 'undefined' ||
             typeof req.body.products === 'undefined' ||
             typeof req.body.quantity === 'undefined' ||
             typeof req.body.discount === 'undefined' ||
@@ -56,15 +56,18 @@ class SellController {
         for (let i = 0; i < products.length; i++) {
             sum += parseInt(quantities[i]) * products_price[i];
         }
+        const count = await Invoice.countDocuments();
         await new Promise((resolve, reject) => setTimeout(resolve,500));
         //tạo hóa đơn
         let invoice = new Invoice({
-            customerId: req.body.customerId,
+            customerPhoneNumber: req.body.customerPhoneNumber,
             staffId: id,
             discount: parseFloat(req.body.discount),
             totalPrice: sum * (1 - parseFloat(req.body.discount)),
-            creater: code
+            creater: code,
+            code: `HD${count+1}`
         });
+        console.log(req.body.discount);
         invoice.save()
         .then(async (data) => {
             // tạo các hóa đơn detail tương ứng của hóa đơn.
@@ -83,13 +86,13 @@ class SellController {
 
     //[POST] /invoice/get
     pGetInvoice(req, res, next) {
-        if (typeof req.body.customerId === 'undefined') {
+        if (typeof req.body.customerPhoneNumber === 'undefined') {
             res.statusCode = 404;
             res.json({ msg: "invalid customer Id"}); 
             return;
         }
         
-        Invoice.find({ customerId: req.body.customerId})
+        Invoice.find({ customerPhoneNumber: req.body.customerPhoneNumber})
         .then(async (data) => {
             //test async await promise
             // for (let d in data) {
