@@ -1,7 +1,8 @@
 const Product = require('../models/Products');
 const Category = require('../models/Category');
 const User = require('../models/Users');
-const iconv = require('iconv-lite')
+const iconv = require('iconv-lite');
+const jwt = require('jsonwebtoken')
 
 // thêm key và value vào object tránh bất đồng bộ
 async function promise(data){
@@ -31,65 +32,72 @@ async function promise(data){
 class ProductController {
     // [POST] /products/create
     // thêm sản phẩm
-    pAddProduct(req, res, next) {
+    async pAddProduct(req, res, next) {
         if (
-            typeof req.body.name        === 'undefined' ||
-            typeof req.body.price       === 'undefined' ||
-            typeof req.body.storage     === 'undefined' ||
-            typeof req.body.description === 'undefined' ||
-            typeof req.body.typeName    === 'undefined' ||
-            typeof req.body.brand       === 'undefined' ||
-            typeof req.body.token       === 'undefined'
+          typeof req.body.name === 'undefined' ||
+          typeof req.body.price === 'undefined' ||
+          typeof req.body.storage === 'undefined' ||
+          typeof req.body.description === 'undefined' ||
+          typeof req.body.typeName === 'undefined' ||
+          typeof req.body.brand === 'undefined' ||
+          typeof req.body.token === 'undefined'
         ) {
-            res.statusCode =402; res.json({msg: "invalid data"});
-            return;
+          res.statusCode = 402;
+          res.json({ msg: "invalid data" });
+          return;
         }
-
-        try {var id = jwt.verify(req.body.token, 'petshop')}
-        catch (e) {
-            res.statusCode =500; res.json({msg: e.message});
-            return;
+      
+        try {
+          var id = await jwt.verify(req.body.token, 'petshop');
+        } catch (e) {
+          res.statusCode = 500;
+          res.json({ msg: e.message });
+          return;
         }
-
+      
         var body = req.body;
-
-        User.findById(id)
-        .then(data => {
-            body.creater = data.code;
-        })
-        .catch(err => { console.log(err); return;});
-        
-        Category.findOne({name: body.typeName})
-        .then(data => {
-            body.typeId = data._id.toString();
-            return;
-        })
-        .catch(err => { console.log(err); return;})
-
-        const count = Product.countDocuments({typeId: body.typeId});
-        if (count < 9) body.code = `${body.typeName.charAt(0)}0${count+1}`;
-        else body.code = `${body.typeName.charAt(0)}${count+1}`
-
-        Product.findOne({$or: [{name: req.body.name}, {code: req.body.code}]})
-        .then(data => {
-            if (data) {
-                res.statusCode =402; res.json({msg: "product exists"});            
-            }
-            else {
-                const newProduct = new Product(req.body);
-                newProduct.save()
-                .then(() => {
-                    res.statusCode =200; res.json({msg:"success"});
-                    return;
-                })
-                .catch(err => {res.statusCode =500; res.json({msg: err.message}); return;});
-            }
-        })
-        .catch(err => {
-            res.statusCode =500; res.json({msg: err.message});
-            return;
-        })
-    }
+      
+        try {
+          const userData = await User.findById(id);
+          body.creater = userData.code;
+        } catch (err) {
+          console.log(err);
+          res.statusCode = 500;
+          res.json({ msg: err.message });
+          return;
+        }
+      
+        try {
+          const categoryData = await Category.findOne({ name: body.typeName });
+          body.typeId = categoryData._id.toString();
+        } catch (err) {
+          console.log(err);
+          res.statusCode = 500;
+          res.json({ msg: err.message });
+          return;
+        }
+      
+        try {
+          const count = await Product.countDocuments({ typeId: body.typeId });
+          if (count < 9) body.code = `${body.typeName.charAt(0)}0${count + 1}`;
+          else body.code = `${body.typeName.charAt(0)}${count + 1}`;
+      
+          const existingProduct = await Product.findOne({ $or: [{ name: req.body.name }, { code: body.code }] });
+          if (existingProduct) {
+            res.statusCode = 402;
+            res.json({ msg: "product exists" });
+          } else {
+            const newProduct = new Product(req.body);
+            await newProduct.save();
+            res.statusCode = 200;
+            res.json({ msg: "success" });
+          }
+        } catch (err) {
+          res.statusCode = 500;
+          res.json({ msg: err.message });
+        }
+      }
+      
 
     //[GET] /products/totalpage
     // lấy tổng số page
