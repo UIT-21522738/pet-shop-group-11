@@ -244,8 +244,8 @@ class ProductController {
             typeof req.body.price === 'undefined'  &&
             typeof req.body.brand === 'undefined' 
         ) {
-            req.statusCode = 404;
-            req.json({msg: 'invalid data'});   
+            res.statusCode = 404;
+            res.json({msg: 'invalid data'});   
             return;
         }
         else if (req.body.name)
