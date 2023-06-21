@@ -45,21 +45,22 @@ class StaffController {
         })
 
         Staff.findOne({phoneNumber: req.body.phoneNumber})
-        .then(data => {
+        .then(async data => {
             if (data) {
                 res.statusCode = 402;
                 res.json({msg: "staff is existing"});
                 return;
             }
             else {
-                const count = Staff.countDocuments();
+                const count = parseInt(await Staff.countDocuments()) + 1;
+
                 if (count < 9) {
-                    body.code = `NV0${count+1}`;
+                    body.code = `NV0${count}`;
                 }
                 else {
-                    body.code = `NV${count+1}`;
+                    body.code = `NV${count}`;
                 }
-                
+
                 const staff = new Staff(body);
 
                 staff.save()
@@ -134,7 +135,7 @@ class StaffController {
 
     // [POST] /staff/search
     pSearchStaff(req, res, next) {
-        if (typeof req.body.phoneNumber === 'undefined' || typeof req.body.code === 'undefined') {
+        if (typeof req.body.phoneNumber === 'undefined' && typeof req.body.code === 'undefined') {
             res.statusCode =404; res.json({msg: "invalid phone number"});
             return;
         }
@@ -172,7 +173,7 @@ class StaffController {
 
     // [DELETE] /staff/delete
     pDeleteStaff(req, res, next) {
-        if (typeof req.body.id === 'undefined' || typeof req.body.code === 'undefined' || typeof req.body.phoneNumber === 'undefined') {
+        if (typeof req.body.id === 'undefined' && typeof req.body.code === 'undefined' && typeof req.body.phoneNumber === 'undefined') {
             res.statusCode =404; res.json({msg: "invalid id"});
             return;
         }
@@ -282,7 +283,7 @@ class StaffController {
         });
     }
 
-    // [POST] /staff/ws
+    // [POST] /staff/ws/:id
     pGetWorkSchedule(req, res, next) {
         if (typeof req.body.month === 'undefined' ||
             typeof req.body.year === 'undefined') {
@@ -353,7 +354,7 @@ class StaffController {
                 {
                     await WS.find({staffId: data._id.toString(), date_month: req.body.month, date_year: req.body.year})
                     .then(async (workSchedules) => {
-                        let salary = (workSchedules.length + 1) * data.salary;
+                        let salary = (workSchedules.length + 1)/30 * data.salary;
     
                         res.statusCode = 200;
                         res.json({msg: "success", ws: (workSchedules.length + 1), salary: salary})
