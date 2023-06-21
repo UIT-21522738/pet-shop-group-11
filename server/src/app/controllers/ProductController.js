@@ -10,6 +10,7 @@ async function promise(data){
         const cate = await Category.findById(item.typeId);
         if (cate) {
             const updatedItem = {
+                _id: item._id.toString(),
                 name: item.name,
                 code: item.code,
                 description: item.description,
@@ -193,7 +194,7 @@ class ProductController {
             typeof req.body.description === 'undefined' &&
             typeof req.body.typeName    === 'undefined' &&
             typeof req.body.brand       === 'undefined') ||
-            typeof req.body.id === 'undefined'
+            (typeof req.body.id === 'undefined' && typeof req.body.code === 'undefined')
         ) {
             res.statusCode = 404;
             res.json({msg: "invalid data"})
@@ -210,13 +211,25 @@ class ProductController {
             })
             .catch(err => { console.log(err); return;})
         }
-        Product.findByIdAndUpdate(body.id, body)
-        .then(data => {
-            res.statusCode = 200;
-            res.json({msg: "success"})
-            return;
-        })
-        .catch(err => { console.log(err.message); return;});
+        if (req.body.id) {
+            Product.findByIdAndUpdate(body.id, body)
+            .then(data => {
+                res.statusCode = 200;
+                res.json({msg: "success"})
+                return;
+            })
+            .catch(err => { console.log(err.message); return;});
+        }
+        else {
+            Product.updateOne({code: body.code}, body)
+            .then(data => {
+                res.statusCode = 200;
+                res.json({msg: "success"})
+                return;
+            })
+            .catch(err => { console.log(err.message); return;});
+        }
+        
         
     }
 
@@ -242,6 +255,7 @@ class ProductController {
             const encodedString = utf.toString('utf8')
             Product.find({$text: {$search: encodedString}})
             .then(async data => {
+                console.log(data[0])
                 if (data) {
                     const p = await promise(data);
                     await Promise.all(p)
