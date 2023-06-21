@@ -2,7 +2,7 @@ const Product = require('../models/Products');
 const Category = require('../models/Category');
 const User = require('../models/Users');
 const iconv = require('iconv-lite');
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
 
 // thêm key và value vào object tránh bất đồng bộ
 async function promise(data){
@@ -37,7 +37,6 @@ class ProductController {
           typeof req.body.name === 'undefined' ||
           typeof req.body.price === 'undefined' ||
           typeof req.body.storage === 'undefined' ||
-          typeof req.body.description === 'undefined' ||
           typeof req.body.typeName === 'undefined' ||
           typeof req.body.brand === 'undefined' ||
           typeof req.body.token === 'undefined'
@@ -68,7 +67,7 @@ class ProductController {
         }
       
         try {
-          const categoryData = await Category.findOne({ name: body.typeName });
+          const categoryData = await Category.findOne({ name: body.typeName.trim() });
           body.typeId = categoryData._id.toString();
         } catch (err) {
           console.log(err);
@@ -93,10 +92,10 @@ class ProductController {
             res.json({ msg: "success" });
           }
         } catch (err) {
-          res.statusCode = 500;
-          res.json({ msg: err.message });
+            res.statusCode = 500;
+            res.json({ msg: err.message });
         }
-      }
+    }
       
 
     //[GET] /products/totalpage
@@ -241,7 +240,6 @@ class ProductController {
             // const encodedString = convertToUTF8(req.body.name);
             const utf = iconv.encode(req.body.name,'utf8');
             const encodedString = utf.toString('utf8')
-            console.log(encodedString)
             Product.find({$text: {$search: encodedString}})
             .then(async data => {
                 if (data) {
@@ -534,7 +532,28 @@ class ProductController {
             res.json({ msg: err.message });
         }
     }
-      
+    
+    // Xóa sản phẩm
+    // [DELETE] /products/delete
+    async deleteProduct(req, res, next) {
+        if (typeof req.body.code === "undefined") {
+            res.statusCode = 404;
+            res.json({ msg: "Invalid code" });
+            return;
+        }
+
+        await Product.deleteOne({code: req.body.code})
+        .then(() => {
+            res.statusCode = 200;
+            res.json({ msg: "success" });
+            return;
+        })
+        .catch(err => {
+            res.statusCode = 500;
+            res.json({ msg: err.message });
+            return;
+        });
+    }
 }
 
 module.exports = new ProductController();
