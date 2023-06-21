@@ -3,6 +3,8 @@ const router = express.Router();
 
 const ProductController = require('../app/controllers/ProductController');
 
+//xoá sản phẩm
+router.delete('/delete', ProductController.deleteProduct);
 //cập nhật sản phẩm
 router.put('/update', ProductController.pUpdateProduct);
 //lấy danh sách sản phẩm
