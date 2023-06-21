@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 
 class DiscountController {
     //[POST] /discount/create
-    pCreateDiscount(req, res, next) {
+    async pCreateDiscount(req, res, next) {
         if (
             typeof req.body.name === 'undefined' ||
             typeof req.body.description === 'undefined' ||
@@ -52,7 +52,7 @@ class DiscountController {
             creater = data.code;
         })
 
-        const count = Users.countDocuments();
+        const count = await Users.countDocuments();
         if (count < 9) {
             var code = `CP0${count+1}`;
         }

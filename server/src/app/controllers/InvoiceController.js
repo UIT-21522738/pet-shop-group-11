@@ -54,8 +54,10 @@ class SellController {
         let products_price = await getPrice(products);
         let sum = 0;
         for (let i = 0; i < products.length; i++) {
+            console.log(products[i]);
             sum += parseInt(quantities[i]) * products_price[i];
         }
+
         const count = await Invoice.countDocuments();
         await new Promise((resolve, reject) => setTimeout(resolve,500));
         //tạo hóa đơn
@@ -68,7 +70,7 @@ class SellController {
             code: `HD${count+1}`
         });
         console.log(req.body.discount);
-        invoice.save()
+        await invoice.save()
         .then(async (data) => {
             // tạo các hóa đơn detail tương ứng của hóa đơn.
             for (let i = 0; i < products.length; i++) {
