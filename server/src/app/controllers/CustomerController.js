@@ -99,46 +99,33 @@ class CustomerController {
         })
     }
 
-    // [PUT] /customer/update/:id
+    // [PUT] /customer/update
     updateCustomer(req, res, next) {
         if (
             (typeof req.body.name === 'undefined' &&
             typeof req.body.phoneNumber === 'undefined' &&
-            typeof req.body.vip === 'undefined')
+            typeof req.body.gender === 'undefined' ) ||
+            typeof req.body.currentPhone === 'undefined' 
         ) {
             res.statusCode = 404;
             res.json({ msg: "invalid data" });
             return;
         }
     
-        let sentResponse = false;
-    
-        Customer.findById(req.params.id)
-        .then(customer => {
-            if (!customer) {
-                sentResponse = true;
-                res.statusCode = 402;
-                res.json({ msg: "customer is not found" });
-                return;
-            }
-
-            return Customer.updateOne({ _id: req.params.id }, req.body);
-        })
+        Customer.updateOne({phoneNumber: req.body.currentPhone}, req.body)
         .then(() => {
-            if (!sentResponse) {
-                res.statusCode = 200;
-                res.json({ msg: 'success' });
-            }
+            res.statusCode = 200;
+            res.json({ msg: 'success' });
+            return;
         })
         .catch(err => {
-            if (!sentResponse) {
-                res.statusCode = 500;
-                res.json({ msg: err.message });
-            }
+            res.statusCode = 500;
+            res.json({ msg: err.message });
+            return;
         });
     }
         
-
+    //không xài
     //[POST] /customer/vip/update/:id
     pUpdateVip(req, res, next) {
         Customer.findById(req.params.id)
@@ -164,15 +151,22 @@ class CustomerController {
         })
     }
 
-    //[GET] /customer/vip/check/:id
+    //không xài
+    //[GET] /customer/vip/check
     gCheckVip(req, res, next) {
-        Customer.findById(req.params.id)
+        if (typeof req.body.code === 'undefined') {
+            res.statusCode = 404;
+            res.json({msg: "invalid code"});
+        }
+
+        Customer.findOne({code: req.body.code})
         .then(data => {
             if (data) {
                 res.statusCode = 200; res.json({msg:'success', data: data.vip});
                 return;
             }
             res.statusCode = 402; res.json({msg:'not found'});
+            return;
         })
         .catch(err => { res.statusCode = err.message; res.json({msg: err.message});});
     }

@@ -76,7 +76,24 @@ class SellController {
                 let invoiceDetails = new Invoice_details({productId: products[i], invoiceId: data._id, quantity: quantities[i], price: products_price[i]});
                 await invoiceDetails.save();
             }
-            Customer.findByIdAndUpdate(req.body.customerId, {score: sum * (1 - parseFloat(req.body.discount)) / 100});
+            
+            Customer.findOne({phoneNumber: req.body.customerPhoneNumber})
+            .then(customer => {
+                const score = customer.score + sum * (1 - parseFloat(req.body.discount)) / 1000;
+                if (score >= 3000) {
+                    customer.score = score;
+                    customer.vip = true;
+                    customer.save();
+                }
+                else {
+                    customer.score = score;
+                    customer.save();
+                }
+            })
+            .catch(err => {
+                res.statusCode = 500;
+                res.json({msg: err.message});
+            })
 
             res.statusCode = 200;
             res.json({msg: 'Success'});

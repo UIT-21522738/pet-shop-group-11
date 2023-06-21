@@ -12,7 +12,7 @@ const customer = new Schema({
     gender: String,
     code: String,
     creater: String,
-    scrore: {type: Number, default: 0, set: function(v) {return parseInt(v);}},
+    score: {type: Number, default: 0, set: function(v) {return parseInt(v);}},
     createdAt: { type: Date, default: Date.now },
 });
 
