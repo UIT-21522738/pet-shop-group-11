@@ -59,7 +59,7 @@ class ProductController {
       
         try {
           const userData = await User.findById(id);
-          body.creater = userData.code;
+          body.createrId = userData.code;
         } catch (err) {
           console.log(err);
           res.statusCode = 500;
@@ -87,7 +87,7 @@ class ProductController {
             res.statusCode = 402;
             res.json({ msg: "product exists" });
           } else {
-            const newProduct = new Product(req.body);
+            const newProduct = new Product(body);
             await newProduct.save();
             res.statusCode = 200;
             res.json({ msg: "success" });
