@@ -11,8 +11,8 @@ const jwt = require('jsonwebtoken');
 async function getPrice(products)
 {
     let products_price = []
-    for (let id of products) {
-        await Product.findById(id)
+    for (let code of products) {
+        await Product.findOne({code: code})
         .then(async (data) => {
             await new Promise((resolve) => setTimeout(resolve, 300));
             products_price.push(data.price);
@@ -53,17 +53,27 @@ class SellController {
         let quantities = req.body.quantity;
         let products_price = await getPrice(products);
         let sum = 0;
+        var staffCode = '';
         for (let i = 0; i < products.length; i++) {
             console.log(products[i]);
             sum += parseInt(quantities[i]) * products_price[i];
         }
 
         const count = await Invoice.countDocuments();
+        Staff.findById(id)
+        .then(staff => {
+            if (staff) {
+                staffCode = staff.code;
+            }
+        })
+        .catch(err => {
+            next(err);
+        })
         await new Promise((resolve, reject) => setTimeout(resolve,500));
         //tạo hóa đơn
         let invoice = new Invoice({
             customerPhoneNumber: req.body.customerPhoneNumber,
-            staffId: id,
+            staffCode: staffCode,
             discount: parseFloat(req.body.discount),
             totalPrice: sum * (1 - parseFloat(req.body.discount)),
             creater: code,
@@ -75,21 +85,23 @@ class SellController {
             // tạo các hóa đơn detail tương ứng của hóa đơn.
             for (let i = 0; i < products.length; i++) {
                 await new Promise((resolve) => setTimeout(resolve, 300));
-                let invoiceDetails = new Invoice_details({productId: products[i], invoiceId: data._id, quantity: quantities[i], price: products_price[i]});
+                var invoiceDetails = new Invoice_details({productCode: products[i], invoiceCode: data.code, quantity: quantities[i], price: products_price[i]});
                 await invoiceDetails.save();
             }
             
             Customer.findOne({phoneNumber: req.body.customerPhoneNumber})
             .then(customer => {
-                const score = customer.score + sum * (1 - parseFloat(req.body.discount)) / 1000;
-                if (score >= 3000) {
-                    customer.score = score;
-                    customer.vip = true;
-                    customer.save();
-                }
-                else {
-                    customer.score = score;
-                    customer.save();
+                if (customer) {
+                    const score = customer.score + sum * (1 - parseFloat(req.body.discount)) / 1000;
+                    if (score >= 3000) {
+                        customer.score = score;
+                        customer.vip = true;
+                        customer.save();
+                    }
+                    else {
+                        customer.score = score;
+                        customer.save();
+                    }
                 }
             })
             .catch(err => {
@@ -98,7 +110,7 @@ class SellController {
             })
 
             res.statusCode = 200;
-            res.json({msg: 'Success'});
+            res.json({msg: 'Success', data: invoice});
         })
         .catch(err => {res.statusCode = 404; res.json({msg: err.message, t: "0"}); return;}); 
     }
@@ -131,15 +143,15 @@ class SellController {
 
     //[POST] /invoice/search
     async pSearchInvoice(req, res, next) {
-        if (typeof req.body.invoiceId === 'undefined') {
+        if (typeof req.body.invoiceCode === 'undefined') {
             res.statusCode = 404;
-            res.json({msg: 'invoiceid invalid'})
+            res.json({msg: 'invoicecode invalid'})
             return;
         }
         
         var products = [];
 
-        await Invoice_details.find({invoiceId: req.body.invoiceId})
+        await Invoice_details.find({invoiceCode: req.body.invoiceCode})
         .then(async (data) => {
             // gán dữ liệu về các invoice details vào biến products
             // await new Promise((resolve, reject) =>{
@@ -151,7 +163,7 @@ class SellController {
             // gán dữ liệu về sản phẩm vào invoice details tương ứng
             for (let i = 0; i < data.length; i++) 
             {
-                await Product.findById(data[i].productId)
+                await Product.find({code: data[i].productCode})
                 .then(async (product) => {
                     await new Promise((resolve, reject) =>{
                         setTimeout(() => {
@@ -160,7 +172,11 @@ class SellController {
                             resolve();
                         },100)
                     })
-                });
+                })
+                .catch(err => {
+                    res.statusCode = 404;
+                    res.json({msg: err.message});
+                })
             }
             // await new Promise((resolve, reject) => setTimeout(() => {},1000));
         })
