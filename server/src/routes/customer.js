@@ -22,7 +22,7 @@ router.post('/add', customer.addCustomer);
 router.delete('/delete', customer.deleteCustomer);
 
 // [PUT] /customer/update/:id
-router.put('/update/:id', customer.updateCustomer);
+router.put('/update', customer.updateCustomer);
 
 // [POST] /customer/search
 router.post('/search', customer.searchCustomer);
