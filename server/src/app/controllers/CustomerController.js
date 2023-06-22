@@ -8,8 +8,8 @@ class CustomerController {
     async addCustomer(req, res, next) {
         if (
             typeof req.body.name === 'undefined' ||
-            typeof req.body.phoneNumber === 'undefined' ||
-            typeof req.body.vip === 'undefined' ||
+            typeof req.body.phoneNumber === 'undefined' &&
+            (typeof req.body.vip === 'undefined') &&
             typeof req.body.gender === 'undefined' ||
             typeof req.body.birthday === 'undefined' ||
             typeof req.body.token === 'undefined' 

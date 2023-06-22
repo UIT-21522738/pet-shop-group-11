@@ -44,7 +44,7 @@ class StaffController {
             body.creater = data.code;
         })
 
-        Staff.findOne({phoneNumber: req.body.phoneNumber})
+        Staff.findOne({$or: {phoneNumber: req.body.phoneNumber, username: req.body.username}})
         .then(async data => {
             if (data) {
                 res.statusCode = 402;
