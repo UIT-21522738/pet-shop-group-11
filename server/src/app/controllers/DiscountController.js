@@ -6,8 +6,8 @@ class DiscountController {
     //[POST] /discount/create
     async pCreateDiscount(req, res, next) {
         if (
-            typeof req.body.name === 'undefined' ||
-            typeof req.body.description === 'undefined' ||
+            (typeof req.body.name === 'undefined' &&
+            typeof req.body.description === 'undefined') ||
             typeof req.body.startDate === 'undefined' ||
             typeof req.body.startMonth === 'undefined' ||
             typeof req.body.startYear === 'undefined' ||
