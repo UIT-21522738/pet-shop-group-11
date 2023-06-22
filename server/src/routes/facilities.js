@@ -16,6 +16,6 @@ router.post('/search', facilities.pSearch);
 router.put('/update', facilities.pUpdateFacilities);
 
 // xóa sản phẩm
-router.delete('/delete/:id', facilities.dDeleteFacilities);
+router.delete('/delete', facilities.dDeleteFacilities);
 
 module.exports = router;
