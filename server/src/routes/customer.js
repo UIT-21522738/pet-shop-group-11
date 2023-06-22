@@ -3,6 +3,9 @@ const router = express.Router();
 
 const customer = require('../app/controllers/CustomerController');
 
+// lấy các khách hàng mới trong tháng
+router.get('/newcustomer', customer.gNewCustomer);
+
 // Lấy danh sách toàn bộ khách hàng
 router.get('/getall', customer.gAllCustomer);
 

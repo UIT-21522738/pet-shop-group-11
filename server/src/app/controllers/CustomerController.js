@@ -185,6 +185,25 @@ class CustomerController {
             return;
         })
     }
+
+    // [GET] /customer/newCustomer
+    gNewCustomer(req, res, next) {
+        const startOfMonth = new Date();
+        startOfMonth.setMonth(startOfMonth.getMonth() - 1);
+
+        const endOfMonth = new Date();
+
+        Customer.find({createdAt: {$gte: startOfMonth, $lte: endOfMonth}})
+        .then(data => {
+            res.statusCode = 200;
+            res.json({msg: "success", data: data});
+            return;
+        })
+        .catch(err => {
+            res.statusCode = 500;
+            res.json({msg: "error"});
+        });
+    }
 }
 
 module.exports = new CustomerController();
