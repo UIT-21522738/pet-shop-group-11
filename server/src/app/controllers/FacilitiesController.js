@@ -4,10 +4,10 @@ const jwt = require('jsonwebtoken')
 
 class FacilitiesController {
     //[POST] /facilities/add
-    pAddFacilities(req, res, next) {
+    async pAddFacilities(req, res, next) {
         if (
-            typeof req.body.name === 'undefined' ||
-            typeof req.body.description === 'undefined' ||
+            (typeof req.body.name === 'undefined' &&
+            typeof req.body.description === 'undefined') ||
             typeof req.body.quantity === 'undefined' ||
             typeof req.body.location === 'undefined' ||
             typeof req.body.token === 'undefined' 
@@ -17,7 +17,7 @@ class FacilitiesController {
             return;
         }
 
-        try {var id = jwt.verify(token, 'petshop')}
+        try {var id = jwt.verify(req.body.token, 'petshop')}
         catch (e) {
             res.statusCode =500; res.json({msg: e.message});
             return;
@@ -28,18 +28,30 @@ class FacilitiesController {
         .then((data) => {
             body.creater = data.code;
         })
+        .catch(err => {})
+        var count = await Facilities.countDocuments();
+        req.body.code = `TB${count+1}`
 
-        const facility = new Facilities(req.body);
-        facility.save()
-        .then(() => {
-            res.statusCode = 200;
-            res.json({msg: "success"});
-            return;
-        })
-        .catch(err => {
-            res.statusCode = err.statusCode;
-            res.json({msg: err.message});
-            return;
+        Facilities.findOne({name: req.body.name})
+        .then((data) => {
+            if (data){
+                res.statusCode = 404;
+                res.json({msg: "facilities exists"});
+            }
+            else {
+                const facility = new Facilities(req.body);
+                facility.save()
+                .then(() => {
+                    res.statusCode = 200;
+                    res.json({msg: "success"});
+                    return;
+                })
+                .catch(err => {
+                    res.statusCode = 500;
+                    res.json({msg: err.message});
+                    return;
+                })      
+            }
         })
     }
 
@@ -85,7 +97,7 @@ class FacilitiesController {
     // [PUT] /facilites/update
     pUpdateFacilities(req, res, next) {
         if (
-            typeof req.body.id === 'undefined' || 
+            typeof req.body.code === 'undefined' || 
             (typeof req.body.quantity === 'undefined' &&
             typeof req.body.location === 'undefined')
         ) {
@@ -94,12 +106,12 @@ class FacilitiesController {
             return;
         }
 
-        Facilities.findById(req.body.id)
+        Facilities.findOne({code: req.body.code})
         .then(data => {
             if (data) {
                 //nếu cập nhật quantity
                 if (typeof req.body.location === 'undefined') {
-                    Facilities.findByIdAndUpdate(req.body.id, {quantity: req.body.quantity})
+                    Facilities.updateOne({code: req.body.code}, {quantity: req.body.quantity})
                     .then(() => {
                         res.statusCode = 200;
                         res.json({msg: "success"});
@@ -113,7 +125,7 @@ class FacilitiesController {
                 }
                 // nếu cập nhật location
                 else if (typeof req.body.quantity === 'undefined') {
-                    Facilities.findByIdAndUpdate(req.body.id, {location: req.body.location})
+                    Facilities.updateOne({code: req.body.code}, {location: req.body.location})
                     .then(() => {
                         res.statusCode = 200;
                         res.json({msg: "success"});
@@ -127,7 +139,7 @@ class FacilitiesController {
                 }
                 //nếu cập nhật cả 2
                 else {
-                    Facilities.findByIdAndUpdate(req.body.id, {location: req.body.location, quantity: req.body.quantity})
+                    Facilities.updateOne({code: req.body.code}, {location: req.body.location, quantity: req.body.quantity})
                     .then(() => {
                         res.statusCode = 200;
                         res.json({msg: "success"});
@@ -143,9 +155,14 @@ class FacilitiesController {
         })
     }
 
-    //[DELETE] /facilities/delete/:id
+    //[DELETE] /facilities/delete
     dDeleteFacilities(req, res, next) {
-        Facilities.findByIdAndDelete(req.params.id)
+        if (typeof req.body.code === "undefined") {
+            res.statusCode = 404;
+            res.json({msg: "invalid data"});
+            return;
+        }
+        Facilities.deleteOne({code: req.body.code})
         .then(() => {
             res.statusCode =200; res.json({msg: "success"});
             return;

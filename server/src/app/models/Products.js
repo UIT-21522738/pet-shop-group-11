@@ -1,8 +1,4 @@
 const mongoose = require('mongoose'); // gọi các thư viện cần thiểt
-const slug = require('mongoose-slug-generator');
-
-//cài plugin slug
-mongoose.plugin(slug);
 
 const Schema = mongoose.Schema;
 
@@ -16,7 +12,6 @@ const product = new Schema({
     brand: String,
     createrId: String,
     code: String,
-    slug: { type: String, slug: "name", unique: true},
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
 });

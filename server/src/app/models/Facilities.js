@@ -5,6 +5,7 @@ const Schema = mongoose.Schema;
 const facilities = new Schema({
     name: { type: String, unique: true },
     description: String,
+    code: String,
     quantity: {type: Number, set: function (value) { return parseInt(value, 10);}},
     location: String,
     creater: String,

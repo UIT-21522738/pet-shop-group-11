@@ -7,10 +7,9 @@ class CustomerController {
     //thêm một khách hàng
     async addCustomer(req, res, next) {
         if (
-            typeof req.body.firstName === 'undefined' ||
-            typeof req.body.lastName === 'undefined' ||
-            typeof req.body.phoneNumber === 'undefined' ||
-            typeof req.body.vip === 'undefined' ||
+            typeof req.body.name === 'undefined' ||
+            typeof req.body.phoneNumber === 'undefined' &&
+            (typeof req.body.vip === 'undefined') &&
             typeof req.body.gender === 'undefined' ||
             typeof req.body.birthday === 'undefined' ||
             typeof req.body.token === 'undefined' 
@@ -20,21 +19,24 @@ class CustomerController {
             return;
         }
         
-        try {var id = jwt.verify(token, 'petshop')}
+        try {var id = jwt.verify(req.body.token, 'petshop')}
         catch (e) {
             res.statusCode =500; res.json({msg: e.message});
             return;
         }
         var body = req.body;
+        const count = await Customer.countDocuments({});
+        body.code = `KH${parseInt(count)+1}`;
 
         const parts = req.body.birthday.split('/');
-        const day = parts[0];
-        const month = parts[1];
-        const year = parts[2];
+        const day = parseInt(parts[0]);
+        const month = parseInt(parts[1]);
+        const year = parseInt(parts[2]);
 
         var birthday = new Date(year, month - 1, day);
 
         body.birthday = birthday;
+        console.log(birthday)
 
         Users.findById(id)
         .then(data => {
@@ -97,47 +99,33 @@ class CustomerController {
         })
     }
 
-    // [PUT] /customer/update/:id
+    // [PUT] /customer/update
     updateCustomer(req, res, next) {
         if (
-            typeof req.body.firstName === 'undefined' ||
-            typeof req.body.lastName === 'undefined' ||
-            typeof req.body.phoneNumber === 'undefined' ||
-            typeof req.body.vip === 'undefined'
+            (typeof req.body.name === 'undefined' &&
+            typeof req.body.phoneNumber === 'undefined' &&
+            typeof req.body.gender === 'undefined' ) ||
+            typeof req.body.currentPhone === 'undefined' 
         ) {
             res.statusCode = 404;
             res.json({ msg: "invalid data" });
             return;
         }
     
-        let sentResponse = false;
-    
-        Customer.findById(req.params.id)
-        .then(customer => {
-            if (!customer) {
-                sentResponse = true;
-                res.statusCode = 402;
-                res.json({ msg: "customer is not found" });
-                return;
-            }
-
-            return Customer.updateOne({ _id: req.params.id }, req.body);
-        })
+        Customer.updateOne({phoneNumber: req.body.currentPhone}, req.body)
         .then(() => {
-            if (!sentResponse) {
-                res.statusCode = 200;
-                res.json({ msg: 'success' });
-            }
+            res.statusCode = 200;
+            res.json({ msg: 'success' });
+            return;
         })
         .catch(err => {
-            if (!sentResponse) {
-                res.statusCode = 500;
-                res.json({ msg: err.message });
-            }
+            res.statusCode = 500;
+            res.json({ msg: err.message });
+            return;
         });
     }
         
-
+    //không xài
     //[POST] /customer/vip/update/:id
     pUpdateVip(req, res, next) {
         Customer.findById(req.params.id)
@@ -163,15 +151,22 @@ class CustomerController {
         })
     }
 
-    //[GET] /customer/vip/check/:id
+    //không xài
+    //[GET] /customer/vip/check
     gCheckVip(req, res, next) {
-        Customer.findById(req.params.id)
+        if (typeof req.body.code === 'undefined') {
+            res.statusCode = 404;
+            res.json({msg: "invalid code"});
+        }
+
+        Customer.findOne({code: req.body.code})
         .then(data => {
             if (data) {
                 res.statusCode = 200; res.json({msg:'success', data: data.vip});
                 return;
             }
             res.statusCode = 402; res.json({msg:'not found'});
+            return;
         })
         .catch(err => { res.statusCode = err.message; res.json({msg: err.message});});
     }
@@ -189,6 +184,25 @@ class CustomerController {
             res.json({msg: err.message});
             return;
         })
+    }
+
+    // [GET] /customer/newCustomer
+    gNewCustomer(req, res, next) {
+        const startOfMonth = new Date();
+        startOfMonth.setMonth(startOfMonth.getMonth() - 1);
+
+        const endOfMonth = new Date();
+
+        Customer.find({createdAt: {$gte: startOfMonth, $lte: endOfMonth}})
+        .then(data => {
+            res.statusCode = 200;
+            res.json({msg: "success", data: data});
+            return;
+        })
+        .catch(err => {
+            res.statusCode = 500;
+            res.json({msg: "error"});
+        });
     }
 }
 

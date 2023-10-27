@@ -3,6 +3,9 @@ const router = express.Router();
 
 const customer = require('../app/controllers/CustomerController');
 
+// lấy các khách hàng mới trong tháng
+router.get('/newcustomer', customer.gNewCustomer);
+
 // Lấy danh sách toàn bộ khách hàng
 router.get('/getall', customer.gAllCustomer);
 
@@ -19,7 +22,7 @@ router.post('/add', customer.addCustomer);
 router.delete('/delete', customer.deleteCustomer);
 
 // [PUT] /customer/update/:id
-router.put('/update/:id', customer.updateCustomer);
+router.put('/update', customer.updateCustomer);
 
 // [POST] /customer/search
 router.post('/search', customer.searchCustomer);

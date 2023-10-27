@@ -7,7 +7,7 @@ const StaffController = require('../app/controllers/StaffController');
 router.get('/getall', StaffController.gAllStaff);
 
 router.post('/ws/:id', StaffController.pGetWorkSchedule);
-router.post('/salary/get/:id', StaffController.pGetSalary);
+router.post('/salary/get', StaffController.pGetSalary);
 router.post('/create', StaffController.pCreateStaff);
 router.post('/update', StaffController.pUpdateStaff);
 router.delete('/delete', StaffController.pDeleteStaff);

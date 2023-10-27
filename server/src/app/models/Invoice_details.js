@@ -5,8 +5,8 @@ const Schema = mongoose.Schema;
 
 // định nghĩa 1 invoice detail
 const invoice_detail = new Schema({
-    invoiceId: String,
-    productId: String,
+    invoiceCode: String,
+    productCode: String,
     quantity: {type: Number, set: function (value) { return parseInt(value, 10);}},
     price: {type: Number, set: function (value) { return parseInt(value, 10);}},
 });
